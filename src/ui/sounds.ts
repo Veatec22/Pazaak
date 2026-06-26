@@ -14,15 +14,17 @@ export type PazaakSound =
   | 'winmatch'
   | 'losematch';
 
+const BASE = import.meta.env.BASE_URL;
+
 const SOURCES: Record<PazaakSound, string> = {
-  drawmain: '/pazaak/sounds/mgs_drawmain.wav',
-  playside: '/pazaak/sounds/mgs_playside.wav',
-  startturn: '/pazaak/sounds/mgs_startturn.wav',
-  warnbust: '/pazaak/sounds/mgs_warnbust.wav',
-  winset: '/pazaak/sounds/mgs_winset.wav',
-  loseset: '/pazaak/sounds/mgs_loseset.wav',
-  winmatch: '/pazaak/sounds/mgs_winmatch.wav',
-  losematch: '/pazaak/sounds/mgs_losematch.wav',
+  drawmain: `${BASE}pazaak/sounds/mgs_drawmain.wav`,
+  playside: `${BASE}pazaak/sounds/mgs_playside.wav`,
+  startturn: `${BASE}pazaak/sounds/mgs_startturn.wav`,
+  warnbust: `${BASE}pazaak/sounds/mgs_warnbust.wav`,
+  winset: `${BASE}pazaak/sounds/mgs_winset.wav`,
+  loseset: `${BASE}pazaak/sounds/mgs_loseset.wav`,
+  winmatch: `${BASE}pazaak/sounds/mgs_winmatch.wav`,
+  losematch: `${BASE}pazaak/sounds/mgs_losematch.wav`,
 };
 
 const VOLUME = 0.5;

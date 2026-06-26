@@ -1,7 +1,8 @@
 /** Maps engine card codes/labels to the extracted KotOR II pazaak art in /public/pazaak. */
 
-const ICON_BASE = '/pazaak/icons';
-const CARD_BASE = '/pazaak/cards';
+const BASE = import.meta.env.BASE_URL;
+const ICON_BASE = `${BASE}pazaak/icons`;
+const CARD_BASE = `${BASE}pazaak/cards`;
 
 // Side-card code -> inventory icon (ii_pazcard_NNN), in the game's own item order.
 const CODE_TO_ICON: Record<string, number> = {
