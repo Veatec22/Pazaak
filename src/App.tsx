@@ -1,13 +1,16 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import { MainMenu, MultiplayerMenu, ShareBar, WaitingRoom } from './Lobby';
+import { MainMenu, MultiplayerMenu, SinglePlayerMenu, ShareBar, WaitingRoom } from './Lobby';
 import { useOnlineMatch } from './net/useOnlineMatch';
 import { getSavedNickname, useLobbyAnnouncer } from './net/useLobby';
 import { Board } from './ui/Board';
 import { useMatch } from './ui/useMatch';
+import { useSinglePlayerMatch } from './ui/useSinglePlayerMatch';
 
 type Route =
   | { mode: 'main-menu' }
+  | { mode: 'single-menu' }
+  | { mode: 'single-game' }
   | { mode: 'multi-menu' }
   | { mode: 'hotseat' }
   | { mode: 'online'; roomId: string; isHost: boolean };
@@ -22,6 +25,12 @@ function parseRoute(): Route {
   }
   const multi = location.hash === '#multiplayer';
   if (multi) return { mode: 'multi-menu' };
+  const single = location.hash === '#singleplayer';
+  if (single) return { mode: 'single-menu' };
+  const quickplay = location.hash === '#quickplay';
+  if (quickplay) return { mode: 'single-game' };
+  const hotseat = location.hash === '#hotseat';
+  if (hotseat) return { mode: 'hotseat' };
   return { mode: 'main-menu' };
 }
 
@@ -36,6 +45,10 @@ export default function App() {
     return () => window.removeEventListener('hashchange', onHash);
   }, []);
 
+  const goToSinglePlayer = useCallback(() => {
+    location.hash = 'singleplayer';
+  }, []);
+
   const goToMultiplayer = useCallback(() => {
     location.hash = 'multiplayer';
   }, []);
@@ -46,9 +59,12 @@ export default function App() {
     location.hash = `room=${id}`; // triggers hashchange → parseRoute (isHost true)
   }, []);
 
+  const playBot = useCallback(() => {
+    location.hash = 'quickplay';
+  }, []);
+
   const hotSeat = useCallback(() => {
-    location.hash = '';
-    setRoute({ mode: 'hotseat' });
+    location.hash = 'hotseat';
   }, []);
 
   const leave = useCallback(() => {
@@ -56,8 +72,18 @@ export default function App() {
     setRoute({ mode: 'main-menu' });
   }, []);
 
+  const leaveSingleGame = useCallback(() => {
+    location.hash = 'singleplayer';
+  }, []);
+
   if (route.mode === 'main-menu') {
-    return <MainMenu onGoMultiplayer={goToMultiplayer} onHotSeat={hotSeat} />;
+    return <MainMenu onGoSinglePlayer={goToSinglePlayer} onGoMultiplayer={goToMultiplayer} onHotSeat={hotSeat} />;
+  }
+  if (route.mode === 'single-menu') {
+    return <SinglePlayerMenu onPlayBot={playBot} onLeave={leave} />;
+  }
+  if (route.mode === 'single-game') {
+    return <SinglePlayerGame onLeave={leaveSingleGame} />;
   }
   if (route.mode === 'multi-menu') {
     return <MultiplayerMenu onPlayFriend={playFriend} onLeave={leave} />;
@@ -98,6 +124,16 @@ function OnlineGame({ roomId, isHost, onLeave }: { roomId: string; isHost: boole
     <>
       <LeaveButton onLeave={onLeave} />
       {isHost ? <ShareBar roomId={roomId} /> : null}
+      <Board controller={controller} />
+    </>
+  );
+}
+
+function SinglePlayerGame({ onLeave }: { onLeave: () => void }) {
+  const controller = useSinglePlayerMatch();
+  return (
+    <>
+      <LeaveButton onLeave={onLeave} />
       <Board controller={controller} />
     </>
   );

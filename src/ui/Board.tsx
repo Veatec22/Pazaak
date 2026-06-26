@@ -1,18 +1,33 @@
 import { useState } from 'react';
 
 import type { Seat } from '../engine';
-import { cardArt, familyForCode } from './cardArt';
+import { cardArt, CARD_BACK, familyForCode } from './cardArt';
 import type { DisplayCard, MatchController } from './controller';
 import { primePazaakSounds } from './sounds';
+import { useI18n } from '../net/useI18n';
 import './board.css';
 
 const SEATS: Seat[] = [0, 1];
 const TABLE_SLOTS = Array.from({ length: 9 }, (_, i) => i);
 
 export function Board({ controller }: { controller: MatchController }) {
-  const { display, view, mySeat, activeSeat, banner, busy, finished, status, online, connection, act, reset } =
-    controller;
+  const {
+    display,
+    view,
+    mySeat,
+    activeSeat,
+    banner,
+    busy,
+    finished,
+    status,
+    online,
+    vsBot,
+    connection,
+    act,
+    reset,
+  } = controller;
   const [activeOption, setActiveOption] = useState<Record<number, number>>({});
+  const { t } = useI18n();
 
   const dropped = online && connection === 'disconnected';
   const waiting = online && connection === 'connecting' && !view;
@@ -34,10 +49,16 @@ export function Board({ controller }: { controller: MatchController }) {
 
   const subtitle = (() => {
     if (online) {
-      const turn = finished ? '' : busy ? '…' : view?.your_turn ? 'Your turn' : "Opponent's turn";
-      return [status, turn].filter(Boolean).join(' · ');
+      const turn = finished ? '' : busy ? '…' : view?.your_turn ? t('your_turn') : t('opponents_turn');
+      return [t(status), turn].filter(Boolean).join(' · ');
     }
-    return `Set ${display.setNumber} · hot-seat (pass & play)${finished ? '' : ` · Player ${mySeat + 1} to move`}`;
+    if (vsBot) {
+      const turn = finished ? '' : busy ? '…' : view?.your_turn ? t('your_turn') : t('opponents_turn');
+      return [`Set ${display.setNumber}`, turn].filter(Boolean).join(' · ');
+    }
+    const setSubtitle = t('pass_and_play_subtitle', { set: display.setNumber });
+    const moveSubtitle = finished ? '' : ` · ${t('player_to_move', { player: mySeat + 1 })}`;
+    return `${setSubtitle}${moveSubtitle}`;
   })();
 
   return (
@@ -54,7 +75,15 @@ export function Board({ controller }: { controller: MatchController }) {
         {SEATS.map((seat) => {
           const active = seat === activeSeat;
           const total = display.totals[seat];
-          const label = online ? (seat === mySeat ? 'You' : 'Opponent') : `Player ${seat + 1}`;
+          const label = (online || vsBot)
+            ? seat === mySeat
+              ? t('you')
+              : t('opponent')
+            : t('player_seat', { player: seat + 1 });
+
+          const isYou = seat === mySeat;
+          const title = isYou ? t('player_hand_title') : t('opponent_hand_title');
+
           return (
             <section key={seat} className={`pz-player ${active ? 'active' : ''}`}>
               <div className="pz-player-head">
@@ -74,57 +103,79 @@ export function Board({ controller }: { controller: MatchController }) {
                 })}
               </div>
 
-              {display.standing[seat] ? <div className="pz-standing">STANDING</div> : <div className="pz-standing-spacer" />}
+              {display.standing[seat] ? (
+                <div className="pz-standing">{t('standing_label')}</div>
+              ) : (
+                <div className="pz-standing-spacer" />
+              )}
+
+              <div className="pz-player-hand-container">
+                <div className="pz-hand-title">{title}</div>
+                <div className="pz-hand">
+                  {[0, 1, 2, 3].map((i) => {
+                    if (isYou) {
+                      const code = view?.you.hand[i];
+                      if (!code) return <div key={i} className="pz-hand-card empty" />;
+                      const options = view!.you.hand_options[i] ?? [code];
+                      const opt = activeOption[i] ?? 0;
+                      const label = options[opt];
+                      const playable = seat === activeSeat && canPlayHand && playableHand.has(i);
+                      return (
+                        <div key={i} className="pz-hand-slot">
+                          <div
+                            className={`pz-hand-card ${playable ? 'playable' : ''}`}
+                            style={{ backgroundImage: `url(${cardArt(label, familyForCode(code))})` }}
+                            onClick={() => play(i)}
+                            title={label}
+                          >
+                            <span>{label}</span>
+                          </div>
+                          {options.length > 1 ? (
+                            <button
+                              className="pz-flip"
+                              disabled={!canPlayHand}
+                              onClick={() => setActiveOption((p) => ({ ...p, [i]: ((p[i] ?? 0) + 1) % options.length }))}
+                              title={t('flip_card')}
+                            >
+                              ⇅
+                            </button>
+                          ) : null}
+                        </div>
+                      );
+                    } else {
+                      const oppHandSize = view?.opponent.hand_size ?? 4;
+                      if (i < oppHandSize) {
+                        return (
+                          <div key={i} className="pz-hand-slot">
+                            <div
+                              className="pz-hand-card facedown"
+                              style={{ backgroundImage: `url(${CARD_BACK})` }}
+                            />
+                          </div>
+                        );
+                      }
+                      return <div key={i} className="pz-hand-card empty" />;
+                    }
+                  })}
+                </div>
+              </div>
             </section>
           );
         })}
       </div>
 
-      {/* Local seat's hand (online: always yours; hot-seat: the seat to move). */}
+      {/* Action buttons at the bottom. */}
       <div className="pz-hand-area">
-        <div className="pz-hand">
-          {[0, 1, 2, 3].map((i) => {
-            const code = view?.you.hand[i];
-            if (!code) return <div key={i} className="pz-hand-card empty" />;
-            const options = view!.you.hand_options[i] ?? [code];
-            const opt = activeOption[i] ?? 0;
-            const label = options[opt];
-            const playable = canPlayHand && playableHand.has(i);
-            return (
-              <div key={i} className="pz-hand-slot">
-                <div
-                  className={`pz-hand-card ${playable ? 'playable' : ''}`}
-                  style={{ backgroundImage: `url(${cardArt(label, familyForCode(code))})` }}
-                  onClick={() => play(i)}
-                  title={label}
-                >
-                  <span>{label}</span>
-                </div>
-                {options.length > 1 ? (
-                  <button
-                    className="pz-flip"
-                    disabled={!canPlayHand}
-                    onClick={() => setActiveOption((p) => ({ ...p, [i]: ((p[i] ?? 0) + 1) % options.length }))}
-                    title="Flip card"
-                  >
-                    ⇅
-                  </button>
-                ) : null}
-              </div>
-            );
-          })}
-        </div>
-
         <div className="pz-actions">
           <button className="pz-btn" disabled={!yourTurn} onClick={() => act({ type: 'end_turn' })}>
-            End Turn
+            {t('btn_end_turn')}
           </button>
           <button className="pz-btn primary" disabled={!yourTurn} onClick={() => act({ type: 'stand' })}>
-            Stand
+            {t('btn_stand')}
           </button>
           {finished && reset ? (
             <button className="pz-btn" onClick={reset}>
-              New Match
+              {t('btn_new_match')}
             </button>
           ) : null}
         </div>
@@ -135,7 +186,7 @@ export function Board({ controller }: { controller: MatchController }) {
           <div>{banner.text}</div>
           {banner.kind === 'match' && reset ? (
             <button className="pz-btn primary" onClick={reset}>
-              Play again
+              {t('btn_play_again')}
             </button>
           ) : null}
         </div>
@@ -144,13 +195,13 @@ export function Board({ controller }: { controller: MatchController }) {
       {dropped ? (
         <div className="pz-overlay">
           <div className="pz-spinner" />
-          <div>{status}</div>
-          <small>The match resumes automatically when they reconnect.</small>
+          <div>{t(status)}</div>
+          <small>{t('reconnect_warning')}</small>
         </div>
       ) : waiting ? (
         <div className="pz-overlay light">
           <div className="pz-spinner" />
-          <div>{status}</div>
+          <div>{t(status)}</div>
         </div>
       ) : null}
     </div>

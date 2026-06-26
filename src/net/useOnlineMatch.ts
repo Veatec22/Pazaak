@@ -24,7 +24,7 @@ export function useOnlineMatch(roomId: string, isHost: boolean): MatchController
   const [busy, setBusy] = useState(true);
   const [connection, setConnection] = useState<'connecting' | 'connected' | 'disconnected'>('connecting');
   const [status, setStatus] = useState(
-    isHost ? 'Share the link — waiting for your friend to join…' : 'Connecting to the host…',
+    isHost ? 'status_waiting_for_friend' : 'status_connecting_to_host',
   );
 
   const sessionRef = useRef<MatchSession | null>(null);
@@ -142,19 +142,19 @@ export function useOnlineMatch(roomId: string, isHost: boolean): MatchController
       peerRef.current = id;
       setConnection('connected');
       if (isHost) {
-        setStatus('Friend connected.');
+        setStatus('status_friend_connected');
         if (!sessionRef.current) startHostGame();
         // A returning guest gets a resync snapshot so its board rebuilds where we left off.
         else sendSyncRef.current?.({ kind: 'resume', state: sessionRef.current.stateFor(GUEST_SEAT) });
       } else {
-        setStatus('Connected to the host.');
+        setStatus('status_connected_to_host');
       }
     });
 
     room.onPeerLeave((id) => {
       if (peerRef.current === id) peerRef.current = null;
       setConnection('disconnected');
-      setStatus(isHost ? 'Friend disconnected — waiting for them to return…' : 'Lost the host — trying to reconnect…');
+      setStatus(isHost ? 'status_friend_disconnected' : 'status_host_disconnected');
       setBusy(true);
     });
 

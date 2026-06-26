@@ -45,6 +45,8 @@ export interface MatchController {
   status: string;
   /** Whether the opponent column should be labelled (online) vs neutral (hot-seat). */
   online: boolean;
+  /** Whether the match is played against a local bot. */
+  vsBot?: boolean;
   /** Online link state; drives the connecting / disconnected overlays. Hot-seat omits it. */
   connection?: 'connecting' | 'connected' | 'disconnected';
   act: (action: ActionDict) => void;

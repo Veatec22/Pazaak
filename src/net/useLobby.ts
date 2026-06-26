@@ -1,43 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
+import { faker } from '@faker-js/faker';
 import { createRoom, type LobbyAnnounceMessage } from './protocol';
 
 const LOBBY_ROOM_ID = 'pazaak-global-lobby';
 
-const KOTOR_NAMES = [
-  'Revan',
-  'Bastila',
-  'Darth Malak',
-  'HK-47',
-  'Canderous',
-  'Carth Onasi',
-  'Mission Vao',
-  'Zaalbar',
-  'Jolee Bindo',
-  'Juhani',
-  'Kreia',
-  'Atton Rand',
-  'Bao-Dur',
-  'Visas Marr',
-  'Hanharr',
-  'Mira',
-  'T3-M4',
-  'Calo Nord',
-  'Davik Kang',
-  'Bendak Starkiller',
-  'Darth Nihilus',
-  'Darth Sion',
-  'Darth Traya',
-  'Atris',
-  'Yuthura Ban',
-  'Trask Ulgo',
-];
-
 const NICKNAME_KEY = 'pz-nickname';
 
 export function getRandomNickname(): string {
-  const name = KOTOR_NAMES[Math.floor(Math.random() * KOTOR_NAMES.length)];
-  const num = Math.floor(100 + Math.random() * 900);
-  return `${name}-${num}`;
+  return faker.internet.username().slice(0, 20);
 }
 
 export function getSavedNickname(): string {

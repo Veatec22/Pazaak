@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 import type { PazaakEvent, Seat, SeatState, TableCardTuple } from '../engine';
 import { type Banner, type Display, type DisplayCard, EMPTY_DISPLAY } from './controller';
 import { playPazaakSound } from './sounds';
+import { useI18n } from '../net/useI18n';
 
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 let cardSeq = 0;
@@ -45,6 +46,7 @@ export function useReplay(mySeat: Seat | null) {
   const [display, setDisplay] = useState<Display>(EMPTY_DISPLAY);
   const [banner, setBanner] = useState<Banner | null>(null);
   const [finished, setFinished] = useState(false);
+  const { t } = useI18n();
 
   const appendCard = useCallback((actor: Seat, label: string, total: number, family: string) => {
     setDisplay((d) => {
@@ -95,7 +97,7 @@ export function useReplay(mySeat: Seat | null) {
             if (tie) playPazaakSound('drawmain');
             else if (mySeat == null) playPazaakSound('winset');
             else playPazaakSound(iWon ? 'winset' : 'loseset');
-            setBanner({ kind: 'set', text: setBannerText(ev.winner, ev.totals, mySeat) });
+            setBanner({ kind: 'set', text: setBannerText(t, ev.winner, ev.totals, mySeat) });
             await sleep(1500);
             setDisplay((d) => ({
               tables: [[], []],
@@ -111,14 +113,14 @@ export function useReplay(mySeat: Seat | null) {
           case 'match_over': {
             const iWon = mySeat != null && ev.winner === mySeat;
             playPazaakSound(mySeat == null || iWon ? 'winmatch' : 'losematch');
-            setBanner({ kind: 'match', text: matchBannerText(ev.winner, mySeat) });
+            setBanner({ kind: 'match', text: matchBannerText(t, ev.winner, mySeat) });
             setFinished(true);
             break;
           }
         }
       }
     },
-    [appendCard, mySeat],
+    [appendCard, mySeat, t],
   );
 
   /** Render a snapshot directly, skipping animation (reconnect / resync). */
@@ -134,15 +136,36 @@ export function useReplay(mySeat: Seat | null) {
   return { display, banner, finished, replay, resetDisplay, showSnapshot, setBanner, setFinished };
 }
 
-function setBannerText(winner: Seat | null, totals: [number, number], mySeat: Seat | null): string {
-  if (winner == null) return `Tie ${totals[0]}–${totals[1]}. Replaying the set.`;
-  if (mySeat == null) return `Player ${winner + 1} wins the set · ${totals[0]}–${totals[1]}`;
+function setBannerText(
+  t: (key: string, params?: Record<string, string | number>) => string,
+  winner: Seat | null,
+  totals: [number, number],
+  mySeat: Seat | null,
+): string {
+  if (winner == null) {
+    return t('tie_set', { mine: totals[0], theirs: totals[1] });
+  }
+  if (mySeat == null) {
+    return t('player_wins_set', {
+      player: winner + 1,
+      mine: totals[winner],
+      theirs: totals[1 - winner],
+    });
+  }
   const mine = totals[mySeat];
   const theirs = totals[1 - mySeat];
-  return `${winner === mySeat ? 'You win' : 'Opponent wins'} the set · ${mine}–${theirs}`;
+  return winner === mySeat
+    ? t('you_win_set', { mine, theirs })
+    : t('opponent_wins_set', { mine, theirs });
 }
 
-function matchBannerText(winner: Seat, mySeat: Seat | null): string {
-  if (mySeat == null) return `Player ${winner + 1} wins the match.`;
-  return winner === mySeat ? 'You win the match.' : 'Opponent wins the match.';
+function matchBannerText(
+  t: (key: string, params?: Record<string, string | number>) => string,
+  winner: Seat,
+  mySeat: Seat | null,
+): string {
+  if (mySeat == null) {
+    return t('player_wins_match', { player: winner + 1 });
+  }
+  return winner === mySeat ? t('you_win_match') : t('opponent_wins_match');
 }
