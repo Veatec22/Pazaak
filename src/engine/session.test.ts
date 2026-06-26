@@ -12,14 +12,14 @@ function session(seed = 0, firstPlayer = 0): MatchSession {
   return new MatchSession(game);
 }
 
-// Reach the private auto-advance/step for the white-box tests (cf. the Python suite).
+
 interface Internals {
   autoAdvance(): PazaakEvent[];
   step(action: Action): PazaakEvent[];
 }
 const peek = (s: MatchSession) => s as unknown as Internals;
 
-// -- action serialisation ----------------------------------------------------
+
 
 describe('action serialisation', () => {
   it.each<Action>([Stand(), EndTurn(), PlayHandCard(2, 1), PlayHandCard(0)])(
@@ -34,7 +34,7 @@ describe('action serialisation', () => {
   });
 });
 
-// -- snapshot ----------------------------------------------------------------
+
 
 describe('per-seat snapshot', () => {
   it('is JSON serialisable and hides the opponent hand', () => {
@@ -58,7 +58,7 @@ describe('per-seat snapshot', () => {
   });
 });
 
-// -- opening events ----------------------------------------------------------
+
 
 describe('opening events', () => {
   it('show the starter draw when seat 0 starts', () => {
@@ -76,7 +76,7 @@ describe('opening events', () => {
   });
 });
 
-// -- driving a turn ----------------------------------------------------------
+
 
 describe('driving a turn', () => {
   it('accepts dict actions and returns events', () => {
@@ -97,12 +97,12 @@ describe('driving a turn', () => {
     const s = session();
     s.game.players[0].hand = [card('±3')];
     s.game.players[0].playedThisTurn = false;
-    const events = peek(s).step(PlayHandCard(0, 1)); // the "-3" option
+    const events = peek(s).step(PlayHandCard(0, 1));
     expect(events.find((e) => e.type === 'play')).toMatchObject({ card: '-3', family: 'flip' });
   });
 
   it('tags main-deck draws as draw with the main family', () => {
-    const events = session().apply({ type: 'end_turn' }); // seat 1 then auto-draws
+    const events = session().apply({ type: 'end_turn' });
     const oppDraw = events.find((e) => e.type === 'draw' && e.actor === 1);
     expect(oppDraw).toBeDefined();
     expect(oppDraw).toMatchObject({ family: 'main' });
@@ -110,7 +110,7 @@ describe('driving a turn', () => {
   });
 });
 
-// -- auto-stand & set framing ------------------------------------------------
+
 
 describe('auto-stand and set framing', () => {
   it('auto-stands the active seat sitting on a locked 20', () => {
@@ -118,12 +118,12 @@ describe('auto-stand and set framing', () => {
     s.game.players[0].table = [
       { label: '10', value: 10, family: 'main' },
       { label: '10', value: 10, family: 'main' },
-    ]; // seat 0 at 20
-    s.game.players[1].standing = true; // seat 1 already done at 0
+    ];
+    s.game.players[1].standing = true;
     s.game.current = 0;
     const events = peek(s).autoAdvance();
     expect(events.some((e) => e.type === 'stand' && e.actor === 0)).toBe(true);
-    // the locked 20 wins the set without seat 0 pressing a button
+
     expect(events.some((e) => e.type === 'set_over' && e.winner === 0)).toBe(true);
   });
 
@@ -133,14 +133,14 @@ describe('auto-stand and set framing', () => {
       { label: '10', value: 10, family: 'main' },
       { label: '10', value: 10, family: 'main' },
       { label: '5', value: 5, family: 'main' },
-    ]; // seat 0 busts on end-turn
+    ];
     const events = peek(s).step(EndTurn());
     const setOver = events.find((e) => e.type === 'set_over');
     expect(setOver).toMatchObject({ type: 'set_over', winner: 1, reason: 'bust' });
   });
 });
 
-// -- end to end --------------------------------------------------------------
+
 
 describe('end to end', () => {
   it('reaches match_over exactly once when both seats take the first legal action', () => {

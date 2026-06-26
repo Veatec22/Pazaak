@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   User,
   Users,
@@ -15,14 +15,15 @@ import {
   Languages,
   Trophy,
   Layers,
+  Download,
 } from 'lucide-react';
 import { useLobby, useNickname, getRandomNickname } from './net/useLobby';
 import { useI18n } from './net/useI18n';
 import './lobby.css';
 
-// -----------------------------------------------------------------------------
-// GITHUB ICON (CUSTOM SVG COMPONENT)
-// -----------------------------------------------------------------------------
+
+
+
 
 function GithubIcon({ size = 20 }: { size?: number }) {
   return (
@@ -49,14 +50,44 @@ function GithubIcon({ size = 20 }: { size?: number }) {
   );
 }
 
-// -----------------------------------------------------------------------------
-// TOP BAR (SHARED HEADER WITH GITHUB LINK & HELP & i18n SWITCHER)
-// -----------------------------------------------------------------------------
+
+
+
 
 export function TopBar() {
   const [showHelp, setShowHelp] = useState(false);
   const [showLangDropdown, setShowLangDropdown] = useState(false);
   const { lang, setLanguage, t } = useI18n();
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+
+    const handleAppInstalled = () => {
+      setDeferredPrompt(null);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('appinstalled', handleAppInstalled);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        setDeferredPrompt(null);
+      }
+    }
+  };
 
   const getGithubRepoUrl = () => {
     if (typeof window === 'undefined') return 'https://github.com/Veatec22/Pazaak';
@@ -111,6 +142,16 @@ export function TopBar() {
             </div>
           )}
         </div>
+        {deferredPrompt && (
+          <button
+            className="pz-topbar-btn pz-install-btn"
+            onClick={handleInstallClick}
+            title={t('install_app')}
+            aria-label={t('install_app')}
+          >
+            <Download size={20} />
+          </button>
+        )}
         <button
           className="pz-topbar-btn"
           onClick={() => setShowHelp(true)}
@@ -169,9 +210,9 @@ export function TopBar() {
   );
 }
 
-// -----------------------------------------------------------------------------
-// MAIN MENU
-// -----------------------------------------------------------------------------
+
+
+
 
 export function MainMenu({
   onGoSinglePlayer,
@@ -222,9 +263,9 @@ export function MainMenu({
   );
 }
 
-// -----------------------------------------------------------------------------
-// MULTIPLAYER MENU
-// -----------------------------------------------------------------------------
+
+
+
 
 export function MultiplayerMenu({
   onPlayFriend,
@@ -238,7 +279,7 @@ export function MultiplayerMenu({
   const [joinCode, setJoinCode] = useState('');
   const { t } = useI18n();
 
-  // Only connect to the lobby room when the search list is open
+
   const { activeGames, connecting } = useLobby(activeTab === 'search');
 
   const handleRandomizeName = () => {
@@ -266,7 +307,7 @@ export function MultiplayerMenu({
 
       <h2>{t('multiplayer')}</h2>
 
-      {/* Nickname Panel */}
+      { }
       <div className="pz-nickname-panel">
         <label htmlFor="nickname">{t('your_nickname')}</label>
         <div className="pz-nickname-input-group">
@@ -396,9 +437,9 @@ export function MultiplayerMenu({
   );
 }
 
-// -----------------------------------------------------------------------------
-// WAITING ROOM SCREEN
-// -----------------------------------------------------------------------------
+
+
+
 
 export function WaitingRoom({ roomId, onLeave }: { roomId: string; onLeave: () => void }) {
   const url = `${location.origin}${location.pathname}#room=${roomId}`;
@@ -481,9 +522,9 @@ export function WaitingRoom({ roomId, onLeave }: { roomId: string; onLeave: () =
   );
 }
 
-// -----------------------------------------------------------------------------
-// SHARE BAR (TOP HEADER IN ACTIVE ONLINE GAME)
-// -----------------------------------------------------------------------------
+
+
+
 
 export function ShareBar({ roomId }: { roomId: string }) {
   const url = `${location.origin}${location.pathname}#room=${roomId}`;
@@ -527,9 +568,9 @@ export function ShareBar({ roomId }: { roomId: string }) {
   );
 }
 
-// -----------------------------------------------------------------------------
-// SINGLE PLAYER MENU
-// -----------------------------------------------------------------------------
+
+
+
 
 export function SinglePlayerMenu({
   onPlayBot,

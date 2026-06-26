@@ -10,12 +10,12 @@ import { actChannel, type ActMessage, createRoom, type Room, syncChannel, type S
 const HOST_SEAT: Seat = 0;
 const GUEST_SEAT: Seat = 1;
 
-/**
- * Networked controller over a Trystero room. The **host** (room creator) owns the single
- * `MatchSession` — all RNG lives there — and broadcasts the public event stream plus the
- * guest's per-seat snapshot. The **guest** is a thin renderer: it replays what the host
- * sends and ships its own actions back up. Both share `Board` and the replay engine.
- */
+
+
+
+
+
+
 export function useOnlineMatch(roomId: string, isHost: boolean): MatchController {
   const mySeat: Seat = isHost ? HOST_SEAT : GUEST_SEAT;
   const { display, banner, finished, replay, resetDisplay, showSnapshot } = useReplay(mySeat);
@@ -40,7 +40,7 @@ export function useOnlineMatch(roomId: string, isHost: boolean): MatchController
     setView(v);
   }, []);
 
-  // -- host side ---------------------------------------------------------------
+
 
   const settleHost = useCallback(() => {
     const s = sessionRef.current;
@@ -89,7 +89,7 @@ export function useOnlineMatch(roomId: string, isHost: boolean): MatchController
     })();
   }, [putView, replay, resetDisplay, settleHost]);
 
-  // -- guest side --------------------------------------------------------------
+
 
   const settleGuest = useCallback((st: SeatState) => {
     putView(st);
@@ -103,7 +103,7 @@ export function useOnlineMatch(roomId: string, isHost: boolean): MatchController
       chainRef.current = chainRef.current.then(async () => {
         setBusy(true);
         if (msg.kind === 'resume') {
-          // Reconnect: rebuild the board straight from the snapshot, no animation.
+
           showSnapshot(msg.state);
           settleGuest(msg.state);
           return;
@@ -117,12 +117,12 @@ export function useOnlineMatch(roomId: string, isHost: boolean): MatchController
     [putView, replay, resetDisplay, settleGuest, showSnapshot],
   );
 
-  // -- room wiring -------------------------------------------------------------
+
 
   useEffect(() => {
-    // No StrictMode "run once" guard here: the cleanup leaves the room, so guarding the
-    // re-mount would leave us with a room that was created then abandoned. Instead we create
-    // and leave per effect lifecycle — StrictMode just does an extra join/leave in dev.
+
+
+
     primePazaakSounds();
 
     const room = createRoom(roomId);
@@ -144,7 +144,7 @@ export function useOnlineMatch(roomId: string, isHost: boolean): MatchController
       if (isHost) {
         setStatus('status_friend_connected');
         if (!sessionRef.current) startHostGame();
-        // A returning guest gets a resync snapshot so its board rebuilds where we left off.
+
         else sendSyncRef.current?.({ kind: 'resume', state: sessionRef.current.stateFor(GUEST_SEAT) });
       } else {
         setStatus('status_connected_to_host');
@@ -164,7 +164,7 @@ export function useOnlineMatch(roomId: string, isHost: boolean): MatchController
     };
   }, [roomId, isHost, applyHost, handleSync, startHostGame]);
 
-  // -- action entry point ------------------------------------------------------
+
 
   const act = useCallback(
     (action: ActionDict) => {
@@ -174,7 +174,7 @@ export function useOnlineMatch(roomId: string, isHost: boolean): MatchController
       if (isHost) {
         applyHost(action, HOST_SEAT);
       } else {
-        putView(null); // lock controls until the host echoes the result
+        putView(null);
         setBusy(true);
         sendActRef.current?.({ action });
       }

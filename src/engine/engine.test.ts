@@ -4,8 +4,8 @@ import { DECK_COLLECTION, FULL_COLLECTION, MainDeck, card, randomSideDeck } from
 import { EndTurn, PazaakGame, Phase, PlayHandCard, type Action, type TableCard } from './engine';
 import { SeededRng } from './rng';
 
-// Access the engine's private members for the white-box rule tests, exactly as the Python
-// suite pokes `_begin_turn` / `_start_set` / `_resolve_standoff` / `main_deck._cards`.
+
+
 interface Internals {
   beginTurn(player: number): void;
   startSet(starter: number): void;
@@ -26,7 +26,7 @@ function game(seed = 0, firstPlayer: number | null = 0): PazaakGame {
   });
 }
 
-// -- card model --------------------------------------------------------------
+
 
 describe('card model', () => {
   it('is the authentic 23 cards', () => {
@@ -36,7 +36,7 @@ describe('card model', () => {
     expect(count('plus')).toBe(6);
     expect(count('minus')).toBe(6);
     expect(count('flip')).toBe(6);
-    expect(count('dual')).toBe(3); // 1&2, 2&4, 3&6
+    expect(count('dual')).toBe(3);
     expect(count('double')).toBe(1);
     expect(count('tiebreak')).toBe(1);
   });
@@ -58,9 +58,9 @@ describe('card model', () => {
   });
 
   it('excludes the gold cards (Double / Tie-Breaker) from the deck pool', () => {
-    expect(DECK_COLLECTION).toHaveLength(21); // 23 collectibles minus D and T
+    expect(DECK_COLLECTION).toHaveLength(21);
     expect(DECK_COLLECTION.some((c) => c.family === 'double' || c.family === 'tiebreak')).toBe(false);
-    // they still exist in the full model (engine keeps the mechanics), just never in a deck
+
     expect(card('D').family).toBe('double');
   });
 
@@ -79,12 +79,12 @@ describe('card model', () => {
     const expected = Array.from({ length: 10 }, (_, i) => i + 1).flatMap((v) => [v, v, v, v]);
     expect(drawn).toEqual(expected);
     expect(deck.remaining).toBe(0);
-    deck.draw(); // forces a reshuffle rather than throwing
+    deck.draw();
     expect(deck.remaining).toBe(39);
   });
 });
 
-// -- engine setup ------------------------------------------------------------
+
 
 describe('engine setup', () => {
   it('deals four-card hands and starts a turn', () => {
@@ -92,7 +92,7 @@ describe('engine setup', () => {
     expect(g.players.every((p) => p.hand.length === 4)).toBe(true);
     expect(g.setNumber).toBe(1);
     expect(g.current).toBe(0);
-    expect(g.players[0].table).toHaveLength(1); // starter auto-drew one card
+    expect(g.players[0].table).toHaveLength(1);
     expect(g.players[1].table).toHaveLength(0);
   });
 
@@ -107,7 +107,7 @@ describe('engine setup', () => {
   });
 });
 
-// -- rule paths --------------------------------------------------------------
+
 
 describe('rule paths', () => {
   it('bust hands the set to the opponent who then starts', () => {
@@ -119,15 +119,15 @@ describe('rule paths', () => {
     expect(result.reason).toBe('bust');
     expect(g.players[1].setsWon).toBe(1);
     expect(g.setNumber).toBe(2);
-    expect(g.current).toBe(1); // winner of the set starts the next one
+    expect(g.current).toBe(1);
     expect(g.players[1].table).toHaveLength(1);
   });
 
   it('nine cards without busting wins the set', () => {
     const g = game();
-    g.players[0].table = Array.from({ length: 8 }, () => tc(2)); // total 16, eight cards
+    g.players[0].table = Array.from({ length: 8 }, () => tc(2));
     pinMainDeck(g, [3]);
-    peek(g).beginTurn(0); // draws the ninth card -> 19, nine cards
+    peek(g).beginTurn(0);
     const result = g.history[g.history.length - 1];
     expect(result.winner).toBe(0);
     expect(result.reason).toBe('nine-cards');
@@ -145,7 +145,7 @@ describe('rule paths', () => {
     expect(last.reason).toBe('tie');
     expect(g.players[0].setsWon).toBe(0);
     expect(g.players[1].setsWon).toBe(0);
-    expect(g.setNumber).toBe(2); // set replayed
+    expect(g.setNumber).toBe(2);
   });
 
   it('tiebreaker card wins an otherwise tied set', () => {
@@ -166,7 +166,7 @@ describe('rule paths', () => {
     g.players[1].table = [tc(9)];
     g.players[0].standing = g.players[1].standing = true;
     peek(g).resolveStandoff();
-    expect(g.current).toBe(1); // P0 started the tied set, so P1 starts the next
+    expect(g.current).toBe(1);
   });
 
   it('higher total wins when both stand', () => {
@@ -182,10 +182,10 @@ describe('rule paths', () => {
 
   it('hand is not refilled between sets', () => {
     const g = game();
-    g.players[0].hand.pop(); // spend a card
+    g.players[0].hand.pop();
     const before = [...g.players[0].hand];
     peek(g).startSet(0);
-    expect(g.players[0].hand).toEqual(before); // only the table resets, never the hand
+    expect(g.players[0].hand).toEqual(before);
   });
 
   it('plays a flip card with the chosen option', () => {
@@ -193,7 +193,7 @@ describe('rule paths', () => {
     g.players[0].hand = [card('±3'), card('+1'), card('+1'), card('+1')];
     g.players[0].table = [tc(5)];
     g.players[0].playedThisTurn = false;
-    g.apply(PlayHandCard(0, 1)); // the "-3" option
+    g.apply(PlayHandCard(0, 1));
     expect(g.players[0].total).toBe(2);
   });
 
@@ -208,7 +208,7 @@ describe('rule paths', () => {
   });
 });
 
-// -- full games --------------------------------------------------------------
+
 
 function playRandomMatch(seed: number): PazaakGame {
   const rng = new SeededRng(seed);

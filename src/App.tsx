@@ -56,7 +56,7 @@ export default function App() {
   const playFriend = useCallback(() => {
     const id = newRoomId();
     sessionStorage.setItem(hostKey(id), '1');
-    location.hash = `room=${id}`; // triggers hashchange → parseRoute (isHost true)
+    location.hash = `room=${id}`;
   }, []);
 
   const playBot = useCallback(() => {
@@ -108,7 +108,7 @@ function OnlineGame({ roomId, isHost, onLeave }: { roomId: string; isHost: boole
   const controller = useOnlineMatch(roomId, isHost);
   const nickname = getSavedNickname();
 
-  // Announce the game room in the global lobby as long as host is waiting
+
   useLobbyAnnouncer(roomId, nickname, isHost && controller.connection === 'connecting');
 
   if (isHost && controller.connection === 'connecting') {

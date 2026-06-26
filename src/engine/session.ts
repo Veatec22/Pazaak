@@ -1,18 +1,18 @@
-/**
- * 1v1 match session: the boundary layer the host's front-end and the network protocol
- * talk to. It wraps `PazaakGame` and turns every state change into an ordered, player-
- * neutral **event stream** (`draw` / `play` / `stand` / `end_turn` / `set_over` /
- * `match_over`) that both peers replay to animate the board and trigger sounds.
- *
- * Ported from `src/hk47_audio/pazaak/session.py`, with the single-player agent removed:
- * both players are human, so `apply` advances exactly one action (for whichever seat is
- * currently to move) and there is no opponent auto-play. The one piece of automation kept
- * is the **auto-stand on 20** QoL — a player sitting on a locked 20 is stood for them, so
- * a stray click can't throw the set away (this is what KotOR itself does).
- *
- * Actions cross the boundary as plain JSON dicts, e.g. `{type: "stand"}` or
- * `{type: "play", hand_index: 1, option_index: 0}`.
- */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 import { WINNING_TOTAL } from './cards';
 import {
@@ -60,12 +60,12 @@ export function actionToDict(action: Action): ActionDict {
   }
 }
 
-/** A legal action plus a human-readable label, for rendering action buttons. */
+
 export interface LabelledAction extends ActionDict {
   label: string;
 }
 
-/** Per-seat snapshot: the game view from a seat plus match-level scoreboard fields. */
+
 export interface SeatState extends GameView {
   match_score: { you: number; opponent: number };
   legal_actions: LabelledAction[];
@@ -75,7 +75,7 @@ export interface SeatState extends GameView {
 
 export class MatchSession {
   readonly game: PazaakGame;
-  /** Events produced at construction time (starter's first auto-draw + any auto-stand). */
+
   readonly openingEvents: PazaakEvent[];
 
   constructor(game: PazaakGame) {
@@ -87,15 +87,15 @@ export class MatchSession {
     return this.game.phase === Phase.MATCH_OVER;
   }
 
-  /** Whose seat is to move right now (undefined once the match is over). */
+
   get current(): Seat | undefined {
     return this.isOver ? undefined : (this.game.current as Seat);
   }
 
-  /**
-   * Apply one action for the seat currently to move, then run any auto-stand. Returns the
-   * ordered event stream for everything that happened, for the board to animate.
-   */
+
+
+
+
   apply(action: Action | ActionDict): PazaakEvent[] {
     if (this.isOver) throw new Error('the match is over');
     const act = 'kind' in action ? action : actionFromDict(action);
@@ -104,7 +104,7 @@ export class MatchSession {
     return events;
   }
 
-  /** A full snapshot from `seat`'s point of view (hides the opponent's hand). */
+
   stateFor(seat: Seat): SeatState {
     const view = this.game.viewFor(seat);
     return {
@@ -119,7 +119,7 @@ export class MatchSession {
     };
   }
 
-  // -- internals ---------------------------------------------------------------
+
 
   private legalActionDicts(seat: Seat): LabelledAction[] {
     const me = this.game.players[seat];
@@ -139,7 +139,7 @@ export class MatchSession {
     });
   }
 
-  /** Independent snapshots of both tables (shallow copies, so before/after diffs hold). */
+
   private tables(): [TableCard[], TableCard[]] {
     return [[...this.game.players[0].table], [...this.game.players[1].table]];
   }
@@ -152,11 +152,11 @@ export class MatchSession {
     return events.concat(this.autoAdvance());
   }
 
-  /**
-   * Auto-stand the active seat while it sits on a locked 20 (and cascade through any set
-   * that resolves as a result), collecting events, until a genuine decision is required or
-   * the match ends. Unlike the single-player session there is no opponent auto-play here.
-   */
+
+
+
+
+
   private autoAdvance(): PazaakEvent[] {
     const events: PazaakEvent[] = [];
     for (let i = 0; i < AUTO_ADVANCE_GUARD; i++) {
@@ -164,7 +164,7 @@ export class MatchSession {
       if (this.shouldAutostand()) {
         events.push(...this.step(Stand()));
       } else {
-        return events; // a genuine choice awaits the active seat
+        return events;
       }
     }
     throw new Error('auto-advance failed to yield the turn');
@@ -175,7 +175,7 @@ export class MatchSession {
     return !me.standing && me.total === WINNING_TOTAL;
   }
 
-  /** Apply one engine action and reconstruct the resulting events by diffing the tables. */
+
   private step(action: Action): PazaakEvent[] {
     const actor = this.game.current as Seat;
     const before = this.tables();
@@ -188,7 +188,7 @@ export class MatchSession {
     else if (action.kind === 'end_turn') events.push({ type: 'end_turn', actor });
 
     if (this.game.history.length > histBefore) {
-      // one or more sets resolved
+
       for (const result of this.game.history.slice(histBefore)) {
         events.push({
           type: 'set_over',
@@ -200,7 +200,7 @@ export class MatchSession {
       if (this.isOver) {
         events.push({ type: 'match_over', winner: this.game.winner as Seat });
       } else {
-        // a fresh set started; its starter auto-drew one card
+
         const starter = this.game.current as Seat;
         events.push(this.cardEvent(starter, after[starter][after[starter].length - 1]));
       }
@@ -215,7 +215,7 @@ export class MatchSession {
   }
 
   private cardEvent(player: Seat, card: TableCard): PazaakEvent {
-    const isDraw = card.family === 'main'; // main-deck draws vs. played side cards
+    const isDraw = card.family === 'main';
     return {
       type: isDraw ? 'draw' : 'play',
       actor: player,

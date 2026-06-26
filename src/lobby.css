@@ -1,6 +1,6 @@
 .pz-lobby {
   height: 100dvh;
-  overflow: auto; /* Allow scrolling if content overflows, e.g. server list */
+  overflow: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -15,7 +15,7 @@
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
 }
 
-/* Logo container & branding */
+
 .pz-logo-container {
   margin-bottom: 8px;
 }
@@ -27,7 +27,7 @@
   color: #eafff8;
   text-shadow: 0 0 25px rgba(26, 178, 140, 0.5);
   font-weight: 800;
-  padding-left: 0.35em; /* Center offset due to letter-spacing */
+  padding-left: 0.35em;
 }
 .pz-logo-subtitle {
   font-size: clamp(0.7rem, 2vw, 0.9rem);
@@ -47,7 +47,7 @@
   line-height: 1.5;
 }
 
-/* Actions list & buttons */
+
 .pz-lobby-actions {
   display: flex;
   flex-direction: column;
@@ -56,7 +56,7 @@
   z-index: 5;
 }
 
-/* Button enhancements */
+
 .pz-btn {
   display: inline-flex;
   align-items: center;
@@ -124,7 +124,7 @@
   box-shadow: inset 0 0 8px rgba(26, 178, 140, 0.2);
 }
 
-/* Nickname panel */
+
 .pz-nickname-panel {
   display: flex;
   flex-direction: column;
@@ -170,7 +170,7 @@
   aspect-ratio: 1;
 }
 
-/* Join form inline */
+
 .pz-join-form {
   display: flex;
   gap: 8px;
@@ -192,7 +192,7 @@
   background: rgba(0, 0, 0, 0.5);
 }
 
-/* Server browser list */
+
 .pz-server-list {
   background: rgba(3, 14, 11, 0.55);
   border: 1px solid rgba(109, 243, 207, 0.15);
@@ -276,7 +276,7 @@
   border-radius: 6px;
 }
 
-/* Spinner */
+
 .pz-spinner {
   width: 14px;
   height: 14px;
@@ -291,7 +291,7 @@
   to { transform: rotate(360deg); }
 }
 
-/* Modal Dialog overlay */
+
 .pz-modal-overlay {
   position: fixed;
   top: 0;
@@ -363,7 +363,7 @@
   to { opacity: 1; }
 }
 
-/* Waiting room overlay */
+
 .pz-waiting-room {
   justify-content: center;
 }
@@ -449,7 +449,7 @@
   gap: 10px;
 }
 
-/* Animations */
+
 @keyframes fadeInDown {
   from { opacity: 0; transform: translateY(-8px); }
   to { opacity: 1; transform: translateY(0); }
@@ -459,7 +459,7 @@
   to { opacity: 1; transform: scale(1); }
 }
 
-/* Share bar (host, online) */
+
 .pz-share {
   position: fixed;
   top: 0;
@@ -501,7 +501,7 @@
   border-color: #1ab28c;
 }
 
-/* Leave button */
+
 .pz-leave {
   position: fixed;
   top: 10px;
@@ -528,7 +528,7 @@
   box-shadow: 0 0 10px rgba(26, 178, 140, 0.2);
 }
 
-/* Responsive adjustments */
+
 @media (max-width: 640px) {
   .pz-share {
     flex-wrap: wrap;
@@ -541,7 +541,7 @@
   }
 }
 
-/* Top Bar and Github Link */
+
 .pz-top-bar {
   position: absolute;
   top: 0;
@@ -585,7 +585,7 @@
   transform: translateY(1px);
 }
 
-/* Help Modal specific styles */
+
 .pz-help-modal {
   width: min(550px, 94vw);
 }
@@ -681,4 +681,10 @@
   z-index: 45;
   pointer-events: auto;
   background: transparent;
+}
+
+@media (display-mode: standalone) {
+  .pz-install-btn {
+    display: none;
+  }
 }

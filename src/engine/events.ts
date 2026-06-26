@@ -1,12 +1,12 @@
-/**
- * The public event stream a board replays to animate a match.
- *
- * Ported from the event-reconstruction logic in `src/hk47_audio/pazaak/session.py`, but
- * made **player-neutral**: actors and winners are absolute seat indices (0 / 1), not the
- * single-player "you" / "opponent" framing. This is the host-authoritative broadcast —
- * both peers receive the same public events; only the per-player `viewFor` snapshot
- * (which hides the opponent's hand) differs. Each client localises 0/1 onto its own seat.
- */
+
+
+
+
+
+
+
+
+
 
 export type Seat = 0 | 1;
 

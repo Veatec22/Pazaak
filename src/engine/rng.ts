@@ -1,21 +1,21 @@
-/**
- * A small seedable RNG, the TS stand-in for Python's `random.Random`.
- *
- * Parity with the Python engine is established by pinning *inputs* (first player, the
- * decks, the main-deck draw order) on shared fixtures — exactly how the Python tests
- * themselves work — not by reproducing CPython's Mersenne Twister byte-for-byte. The
- * interface below mirrors the handful of `random.Random` methods the engine uses.
- */
+
+
+
+
+
+
+
+
 export interface Rng {
-  /** Inclusive integer in [a, b], like `random.randint`. */
+
   randint(a: number, b: number): number;
-  /** Fisher-Yates shuffle in place, like `random.shuffle`. */
+
   shuffle<T>(list: T[]): void;
-  /** `k` distinct elements drawn without replacement, like `random.sample`. */
+
   sample<T>(list: readonly T[], k: number): T[];
 }
 
-/** Deterministic mulberry32-based RNG. Same seed → same stream (within JS). */
+
 export class SeededRng implements Rng {
   private state: number;
 
@@ -24,7 +24,7 @@ export class SeededRng implements Rng {
   }
 
   private next(): number {
-    // mulberry32
+
     this.state = (this.state + 0x6d2b79f5) >>> 0;
     let t = this.state;
     t = Math.imul(t ^ (t >>> 15), t | 1);

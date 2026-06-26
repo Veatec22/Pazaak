@@ -8,12 +8,12 @@ import { playPazaakSound, primePazaakSounds } from './sounds';
 
 const BOT_DELAY_MS = 800;
 
-/**
- * Single-player controller: duel against a local computer agent (bot).
- * The human player controls seat 0, and the computer decides seat 1.
- */
+
+
+
+
 export function useSinglePlayerMatch(): MatchController {
-  // Pass 0 (human seat) to useReplay so win/lose banners and sounds align with player 0
+
   const { display, banner, finished, replay, resetDisplay } = useReplay(0);
   const [view, setView] = useState<SeatState | null>(null);
   const [busy, setBusy] = useState(true);
@@ -26,7 +26,7 @@ export function useSinglePlayerMatch(): MatchController {
     const session = sessionRef.current;
     if (!session || session.isOver) return;
 
-    // Simulate "thinking" delay
+
     await new Promise<void>((resolve) => {
       botTimeoutRef.current = window.setTimeout(resolve, BOT_DELAY_MS);
     });
@@ -53,11 +53,11 @@ export function useSinglePlayerMatch(): MatchController {
     setView(session.stateFor(0));
 
     if (currentSeat === 1) {
-      // It is the bot's turn
+
       setBusy(true);
       void runBotTurn();
     } else {
-      // It is the human's turn
+
       setBusy(false);
       playPazaakSound('startturn');
     }

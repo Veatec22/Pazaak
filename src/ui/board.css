@@ -10,7 +10,7 @@
     var(--bg);
 }
 
-/* ── Header ─────────────────────────────────────────── */
+
 .pz-header {
   text-align: center;
   padding: 6px 12px 2px;
@@ -32,7 +32,7 @@
   opacity: 0.7;
 }
 
-/* ── Player panels container ────────────────────────── */
+
 .pz-tables {
   flex: 1;
   min-height: 0;
@@ -45,7 +45,7 @@
   margin: 0 auto;
 }
 
-/* ── Single player panel ────────────────────────────── */
+
 .pz-player {
   flex: 1;
   min-height: 0;
@@ -72,7 +72,7 @@
   }
 }
 
-/* ── Player header (name · pips · total) ────────────── */
+
 .pz-player-head {
   display: flex;
   align-items: center;
@@ -114,7 +114,7 @@
   color: #ff6b6b;
 }
 
-/* ── 3×3 card grid ──────────────────────────────────── */
+
 .pz-grid {
   flex: 1;
   min-height: 0;
@@ -181,7 +181,27 @@
   flex-shrink: 0;
 }
 
-/* ── Hand area (bottom) ─────────────────────────────── */
+.pz-player-hand-container {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-shrink: 0;
+  border-top: 1px dashed rgba(109, 243, 207, 0.1);
+  padding-top: 8px;
+}
+.pz-hand-title {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-bright);
+  opacity: 0.6;
+  text-align: center;
+  margin-bottom: 2px;
+}
+
+
 .pz-hand-area {
   flex-shrink: 0;
   max-width: 720px;
@@ -220,7 +240,7 @@
   transform: translateY(-6%) scale(1.05);
 }
 
-/* ── Flip / toggle ± ────────────────────────────────── */
+
 .pz-flip {
   background: rgba(0, 0, 0, 0.5);
   border: 1px solid var(--border);
@@ -240,7 +260,7 @@
   cursor: default;
 }
 
-/* ── Action buttons ─────────────────────────────────── */
+
 .pz-actions {
   display: flex;
   justify-content: center;
@@ -273,7 +293,7 @@
   font-weight: 700;
 }
 
-/* ── Set result banner ──────────────────────────────── */
+
 .pz-banner {
   position: fixed;
   inset: 0;
@@ -306,7 +326,7 @@
   }
 }
 
-/* ── Connection indicator dot ───────────────────────── */
+
 .pz-conn {
   display: inline-block;
   width: 9px;
@@ -335,7 +355,7 @@
   }
 }
 
-/* ── Connecting / disconnected overlay ──────────────── */
+
 .pz-overlay {
   position: fixed;
   inset: 0;
@@ -374,9 +394,9 @@
   }
 }
 
-/* ──────────────────────────────────────────────────────
-   Desktop / wide screens: side-by-side panels
-   ────────────────────────────────────────────────────── */
+
+
+
 @media (min-width: 641px) {
   .pz-root {
     padding: 8px 24px 16px;

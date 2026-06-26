@@ -19,7 +19,7 @@ export function setLanguage(lang: Language) {
   listeners.forEach((l) => l(lang));
 }
 
-// Initialize language
+
 currentLang = getLanguage();
 
 export const translations = {
@@ -74,6 +74,7 @@ export const translations = {
     player_seat: 'Player {player}',
     player_hand_title: 'Player Hand',
     opponent_hand_title: 'Opponent Hand',
+    install_app: 'Install App',
     btn_end_turn: 'End Turn',
     btn_stand: 'Stand',
     btn_new_match: 'New Match',
@@ -160,6 +161,7 @@ export const translations = {
     player_seat: 'Gracz {player}',
     player_hand_title: 'Ręka Gracza',
     opponent_hand_title: 'Ręka Przeciwnika',
+    install_app: 'Zainstaluj aplikację',
     btn_end_turn: 'Koniec tury',
     btn_stand: 'Stand',
     btn_new_match: 'Nowy mecz',

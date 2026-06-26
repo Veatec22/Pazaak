@@ -5,6 +5,7 @@ import { cardArt, CARD_BACK, familyForCode } from './cardArt';
 import type { DisplayCard, MatchController } from './controller';
 import { primePazaakSounds } from './sounds';
 import { useI18n } from '../net/useI18n';
+import { TopBar } from '../Lobby';
 import './board.css';
 
 const SEATS: Seat[] = [0, 1];
@@ -63,6 +64,7 @@ export function Board({ controller }: { controller: MatchController }) {
 
   return (
     <div className="pz-root" onPointerDown={primePazaakSounds}>
+      <TopBar />
       <header className="pz-header">
         <h1>Pazaak</h1>
         <div className="pz-sub">
@@ -164,7 +166,7 @@ export function Board({ controller }: { controller: MatchController }) {
         })}
       </div>
 
-      {/* Action buttons at the bottom. */}
+      { }
       <div className="pz-hand-area">
         <div className="pz-actions">
           <button className="pz-btn" disabled={!yourTurn} onClick={() => act({ type: 'end_turn' })}>

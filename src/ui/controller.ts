@@ -27,12 +27,12 @@ export const EMPTY_DISPLAY: Display = {
   setNumber: 1,
 };
 
-/**
- * The single shape `Board` renders, whatever drives it — the local hot-seat session or a
- * networked host/guest. `view` is the snapshot for the *local* seat (its hand + legal
- * actions); `display` is the public board (absolute seat indices). `mySeat` is which column
- * is "you" (always the active seat in hot-seat, the fixed local seat online).
- */
+
+
+
+
+
+
 export interface MatchController {
   display: Display;
   view: SeatState | null;
@@ -41,15 +41,15 @@ export interface MatchController {
   banner: Banner | null;
   busy: boolean;
   finished: boolean;
-  /** Connection / waiting status, shown under the title. Empty for plain hot-seat. */
+
   status: string;
-  /** Whether the opponent column should be labelled (online) vs neutral (hot-seat). */
+
   online: boolean;
-  /** Whether the match is played against a local bot. */
+
   vsBot?: boolean;
-  /** Online link state; drives the connecting / disconnected overlays. Hot-seat omits it. */
+
   connection?: 'connecting' | 'connected' | 'disconnected';
   act: (action: ActionDict) => void;
-  /** Offered when a rematch can be started from this client (hot-seat / host). */
+
   reset?: () => void;
 }

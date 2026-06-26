@@ -1,32 +1,32 @@
-/**
- * The pazaak rules engine: a self-contained, frontend-agnostic state machine.
- *
- * Direct port of `src/hk47_audio/pazaak/engine.py`. The engine owns the full game state
- * and enforces every rule; *drivers* (a hot-seat UI, the network session, tests) advance
- * it by reading `legalActions()` and calling `apply()`. Nothing here knows or cares who is
- * making the decisions, which keeps the same engine reusable across very different fronts.
- *
- * Rules modelled (KotOR II):
- *   - A **match** is first to SETS_TO_WIN_MATCH (3) set wins.
- *   - Each **set**, players alternate turns. A turn always begins by auto-drawing one
- *     main-deck card (1-10) face-up. The active player may then play at most one hand card,
- *     and finally either **stand** (lock the total) or **end the turn**. The bust check
- *     (> 20) happens when the turn ends, so a card drawn over 20 can still be rescued.
- *   - A player who fills the table with MAX_TABLE_CARDS (9) cards without busting wins the
- *     set immediately.
- *   - A set is won by the higher total ≤ 20, or when the opponent busts. Equal totals tie:
- *     the set is replayed for no one — unless exactly one player played a tie-breaker card.
- *   - First player of set 1 is random (or pinned). Thereafter the set's winner starts the
- *     next set; after a tie, whoever did *not* start the tied set does.
- *   - The four-card hand is dealt once at match start and is never refilled.
- */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 import { HAND_SIZE, MAX_TABLE_CARDS, MainDeck, SETS_TO_WIN_MATCH, SIDE_DECK_SIZE, type SideCard, WINNING_TOTAL } from './cards';
 import type { Rng } from './rng';
 import { SeededRng } from './rng';
 
 export enum Phase {
-  PLAYER_DECISION = 'PLAYER_DECISION', // waiting for the current player to choose an action
+  PLAYER_DECISION = 'PLAYER_DECISION',
   MATCH_OVER = 'MATCH_OVER',
 }
 
@@ -52,11 +52,11 @@ export const PlayHandCard = (handIndex: number, optionIndex = 0): PlayHandCard =
   optionIndex,
 });
 
-/**
- * A face-up card on a player's table; `value` is its signed contribution. `family` is the
- * source family ("main" for a main-deck draw, otherwise the side card's family — "plus",
- * "minus", "flip", "dual", …) so the front-end can pick the right art (e.g. two-tone flip).
- */
+
+
+
+
+
 export interface TableCard {
   readonly label: string;
   readonly value: number;
@@ -77,7 +77,7 @@ export class PlayerState {
   }
 }
 
-/** Outcome of a finished set; `winner` is `null` for a (replayed) tie. */
+
 export interface SetResult {
   readonly setNumber: number;
   readonly winner: number | null;
@@ -85,7 +85,7 @@ export interface SetResult {
   readonly reason: 'bust' | 'higher' | 'nine-cards' | 'tiebreak' | 'tie';
 }
 
-/** A table card as it crosses the view boundary: [label, value, family]. */
+
 export type TableCardTuple = [string, number, string];
 
 export interface PlayerView {
@@ -114,10 +114,10 @@ export interface GameView {
   opponent: OpponentView;
 }
 
-/**
- * A full pazaak match. Construct with each player's 10-card side deck, then drive it via
- * `legalActions()` / `apply()` until `phase` is `MATCH_OVER`.
- */
+
+
+
+
 export class PazaakGame {
   readonly rng: Rng;
   readonly mainDeck: MainDeck;
@@ -148,7 +148,7 @@ export class PazaakGame {
     this.startSet(this.starter);
   }
 
-  // -- driving API -------------------------------------------------------------
+
 
   legalActions(): Action[] {
     if (this.phase === Phase.MATCH_OVER) return [];
@@ -172,7 +172,7 @@ export class PazaakGame {
     }
   }
 
-  // -- turn / set mechanics ----------------------------------------------------
+
 
   private startSet(starter: number): void {
     for (const p of this.players) {
@@ -218,7 +218,7 @@ export class PazaakGame {
     const me = this.players[this.current];
     me.playedThisTurn = false;
     if (me.total > WINNING_TOTAL) {
-      // bust: opponent takes the set
+
       this.endSet(1 - this.current, 'bust');
       return;
     }
@@ -230,13 +230,13 @@ export class PazaakGame {
     if (!this.players[opp].standing) {
       this.beginTurn(opp);
     } else if (!this.players[this.current].standing) {
-      this.beginTurn(this.current); // opponent has stood; keep drawing
+      this.beginTurn(this.current);
     } else {
       this.resolveStandoff();
     }
   }
 
-  /** If `player` now holds 9 cards the set resolves at once. Returns true if so. */
+
   private checkFullTable(player: number): boolean {
     const me = this.players[player];
     if (me.table.length < MAX_TABLE_CARDS) return false;
@@ -281,18 +281,18 @@ export class PazaakGame {
       }
       nextStarter = winner;
     } else {
-      nextStarter = 1 - this.starter; // non-starter of the tied set starts next
+      nextStarter = 1 - this.starter;
     }
     this.startSet(nextStarter);
   }
 
-  // -- inspection --------------------------------------------------------------
 
-  /**
-   * A fair snapshot for `player`: full own state, but only the *size* of the opponent's
-   * hand. The host sends each peer only their own view so an unplayed hand never reaches
-   * the opponent's DOM.
-   */
+
+
+
+
+
+
   viewFor(player: number): GameView {
     const me = this.players[player];
     const opp = this.players[1 - player];

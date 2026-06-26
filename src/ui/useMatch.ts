@@ -6,10 +6,10 @@ import type { MatchController } from './controller';
 import { useReplay } from './replay';
 import { playPazaakSound, primePazaakSounds } from './sounds';
 
-/**
- * Local hot-seat (pass & play) controller: one `MatchSession`, both seats human, the board
- * flips to show whichever seat is to move. Shares the event-replay engine with online play.
- */
+
+
+
+
 export function useMatch(): MatchController {
   const { display, banner, finished, replay, resetDisplay } = useReplay(null);
   const [view, setView] = useState<SeatState | null>(null);
@@ -42,7 +42,7 @@ export function useMatch(): MatchController {
   }, [replay, resetDisplay, settle]);
 
   useEffect(() => {
-    if (startedRef.current) return; // guard StrictMode double-invoke
+    if (startedRef.current) return;
     startedRef.current = true;
     primePazaakSounds();
     void start();

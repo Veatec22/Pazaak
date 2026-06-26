@@ -1,6 +1,6 @@
-/* Shared palette — defined globally so the lobby, share bar and board all resolve these
-   (the board used to scope them to .pz-root, which left .pz-btn.primary in the lobby with an
-   invalid gradient → dark text on dark background, i.e. an invisible button). */
+
+
+
 :root {
   --accent: #1ab28c;
   --accent-bright: #6df3cf;

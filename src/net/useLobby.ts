@@ -38,9 +38,9 @@ export interface ActiveGame {
   hostName: string;
 }
 
-/**
- * Hook for guests to listen for active games in the global lobby room.
- */
+
+
+
 export function useLobby(active: boolean) {
   const [activeGames, setActiveGames] = useState<ActiveGame[]>([]);
   const [connecting, setConnecting] = useState(false);
@@ -56,7 +56,7 @@ export function useLobby(active: boolean) {
     const room = createRoom(LOBBY_ROOM_ID);
     const [_, getAnnounce] = room.makeAction('announce') as unknown as [unknown, (cb: (m: LobbyAnnounceMessage, peerId: string) => void) => void];
 
-    // When we join, existing hosts will trigger onPeerJoin and send us announcements.
+
     getAnnounce((data, peerId) => {
       setConnecting(false);
       setActiveGames((prev) => {
@@ -74,7 +74,7 @@ export function useLobby(active: boolean) {
       setActiveGames((prev) => prev.filter((g) => g.peerId !== peerId));
     });
 
-    // Timeout connecting indicator if no peers are found after 4s (lobby is just empty)
+
     const timeout = setTimeout(() => {
       setConnecting(false);
     }, 4000);
@@ -88,9 +88,9 @@ export function useLobby(active: boolean) {
   return { activeGames, connecting };
 }
 
-/**
- * Hook for hosts to advertise their game room in the global lobby room.
- */
+
+
+
 export function useLobbyAnnouncer(roomId: string, hostName: string, active: boolean) {
   useEffect(() => {
     if (!active) return;
@@ -98,17 +98,17 @@ export function useLobbyAnnouncer(roomId: string, hostName: string, active: bool
     const room = createRoom(LOBBY_ROOM_ID);
     const [sendAnnounce] = room.makeAction('announce') as unknown as [(m: LobbyAnnounceMessage, target?: string) => Promise<unknown>, unknown];
 
-    // Broadcast our presence immediately to all existing peers in the lobby
+
     const announceAll = () => {
       void sendAnnounce({ roomId, hostName });
     };
 
-    // When a new peer joins the lobby, send them our host announcement directly
+
     room.onPeerJoin((peerId) => {
       void sendAnnounce({ roomId, hostName }, peerId);
     });
 
-    // Small delay to ensure WebRTC stack is ready before broadcasting initial announce
+
     const delay = setTimeout(announceAll, 1000);
 
     return () => {

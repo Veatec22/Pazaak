@@ -1,8 +1,8 @@
-/**
- * KotOR II pazaak sound cues (extracted from Sounds.bif → mgs_* minigame sounds), played
- * through the Web Audio API. No-ops where Web Audio is unavailable (e.g. jsdom in tests).
- * Ported from the HK-47 web app.
- */
+
+
+
+
+
 
 export type PazaakSound =
   | 'drawmain'
@@ -59,7 +59,7 @@ export function primePazaakSounds(): void {
           const response = await fetch(SOURCES[name]);
           buffers.set(name, await context!.decodeAudioData(await response.arrayBuffer()));
         } catch {
-          // a missing cue just stays silent
+
         }
       }),
     );

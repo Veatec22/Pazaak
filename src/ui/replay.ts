@@ -8,12 +8,12 @@ import { useI18n } from '../net/useI18n';
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 let cardSeq = 0;
 
-/**
- * Rebuild the full board straight from a per-seat snapshot (no animation). Used when a peer
- * (re)connects mid-match: the event stream that built the board is gone, but the snapshot
- * carries both tables, totals, standing flags and the score — enough to render the board as
- * it stands and pick the turn back up.
- */
+
+
+
+
+
+
 function snapshotToDisplay(state: SeatState, mySeat: Seat): Display {
   const toCards = (cards: TableCardTuple[]): DisplayCard[] =>
     cards.map(([label, , family]) => ({ key: `c${cardSeq++}`, label, family }));
@@ -33,15 +33,15 @@ function snapshotToDisplay(state: SeatState, mySeat: Seat): Display {
   return { tables, totals, standing, scores, setNumber: state.set_number };
 }
 
-/**
- * Shared event-stream player: turns a `PazaakEvent[]` into board animation (cards dealt,
- * KotOR sound cues, set/match banners). Used by both the local hot-seat controller and the
- * networked host/guest — they differ only in where the events come from.
- *
- * `mySeat` frames win/lose sounds and banner wording: pass a seat for online play
- * ("You win" + winset/loseset from that seat), or `null` for the neutral hot-seat framing
- * ("Player N wins").
- */
+
+
+
+
+
+
+
+
+
 export function useReplay(mySeat: Seat | null) {
   const [display, setDisplay] = useState<Display>(EMPTY_DISPLAY);
   const [banner, setBanner] = useState<Banner | null>(null);
@@ -123,7 +123,7 @@ export function useReplay(mySeat: Seat | null) {
     [appendCard, mySeat, t],
   );
 
-  /** Render a snapshot directly, skipping animation (reconnect / resync). */
+
   const showSnapshot = useCallback(
     (state: SeatState) => {
       setDisplay(snapshotToDisplay(state, mySeat ?? 0));
