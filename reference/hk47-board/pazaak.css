@@ -1,0 +1,213 @@
+.pz-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.78);
+  backdrop-filter: blur(3px);
+}
+
+.pz-stage {
+  position: relative;
+  width: min(960px, 96vw);
+}
+
+.pz-leave {
+  position: absolute;
+  top: -34px;
+  right: 0;
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 6px;
+  padding: 2px 10px;
+  cursor: pointer;
+  z-index: 2;
+}
+.pz-leave:hover {
+  color: var(--text-bright);
+  border-color: var(--accent);
+}
+
+/* The board is the extracted KotOR panel; everything is positioned in its 800x600 space. */
+.pz-board {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 800 / 600;
+  container-type: inline-size; /* lets the cqw units below scale text to the board width */
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
+  font-family: inherit;
+  color: #e8fff7;
+  user-select: none;
+}
+
+.pz-board > * {
+  position: absolute;
+}
+
+.pz-name {
+  font-size: 1.35cqw;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #cfe9df;
+  display: flex;
+  align-items: center;
+}
+.pz-right {
+  justify-content: flex-end;
+}
+
+.pz-total {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.7cqw;
+  color: #eafff8;
+  font-variant-numeric: tabular-nums;
+}
+.pz-total.bust {
+  color: #ff6b6b;
+}
+
+.pz-light {
+  object-fit: contain;
+  filter: drop-shadow(0 0 6px var(--accent));
+  pointer-events: none;
+}
+
+.pz-pip {
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.35);
+}
+.pz-pip.on {
+  background: radial-gradient(circle at 35% 30%, #6df3cf, var(--accent));
+  box-shadow: 0 0 8px var(--accent);
+}
+
+.pz-card,
+.pz-card-back,
+.pz-hand-card {
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.pz-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pz-deal 0.3s ease-out;
+}
+/* Anchored to the dark inset box on the card art (≈38% down), not the slot centre. */
+.pz-card span {
+  position: absolute;
+  top: 38%;
+  left: 0;
+  right: 0;
+  text-align: center;
+  transform: translateY(-50%);
+  font-weight: 700;
+  font-size: 1.4cqw;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+}
+
+@keyframes pz-deal {
+  from {
+    transform: translateY(-16px) scale(0.88);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+.pz-hand-card {
+  cursor: default;
+  transition: transform 0.12s ease, filter 0.12s ease;
+}
+.pz-hand-card.playable {
+  cursor: pointer;
+  filter: drop-shadow(0 0 7px var(--accent));
+}
+.pz-hand-card.playable:hover {
+  transform: translateY(-6%) scale(1.04);
+}
+
+.pz-flip {
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid var(--border);
+  color: var(--text-bright);
+  border-radius: 4px;
+  font-size: 0.9cqw;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+}
+.pz-flip:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+.pz-flip:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.pz-action {
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(0, 0, 0, 0.5);
+  color: #d8fff1;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-size: 0.92cqw;
+  cursor: pointer;
+  border-radius: 3px;
+}
+.pz-action:hover:not(:disabled) {
+  color: #fff;
+  text-shadow: 0 0 8px var(--accent);
+}
+.pz-action:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.pz-action.forfeit {
+  color: #d8b24a;
+}
+
+.pz-banner {
+  left: 28%;
+  right: 28%;
+  top: 42%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+  padding: 14px 16px;
+  background: rgba(2, 12, 9, 0.92);
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  font-size: 1cqw;
+  box-shadow: 0 0 24px rgba(26, 178, 140, 0.3);
+}
+.pz-banner .pz-taunt {
+  font-style: italic;
+  color: var(--text);
+  font-size: 0.92cqw;
+}
+
+.pz-error {
+  margin-top: 10px;
+  color: #ff6b6b;
+  font-size: 0.85rem;
+  text-align: center;
+}

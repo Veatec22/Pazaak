@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0e2a22"/>
+      <stop offset="1" stop-color="#06120e"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#6df3cf"/>
+      <stop offset="1" stop-color="#1ab28c"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="96" fill="url(#bg)"/>
+  <g transform="rotate(-8 256 256)">
+    <rect x="150" y="120" width="212" height="272" rx="22" fill="url(#card)"/>
+    <rect x="178" y="222" width="156" height="68" rx="10" fill="#04140f"/>
+    <text x="256" y="276" font-family="Segoe UI, system-ui, sans-serif" font-size="58" font-weight="800"
+      fill="#eafff8" text-anchor="middle">20</text>
+    <polygon points="256,150 276,176 236,176" fill="#04140f" opacity="0.55"/>
+    <polygon points="256,362 276,336 236,336" fill="#04140f" opacity="0.55"/>
+  </g>
+</svg>

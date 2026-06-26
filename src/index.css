@@ -1,0 +1,30 @@
+/* Shared palette — defined globally so the lobby, share bar and board all resolve these
+   (the board used to scope them to .pz-root, which left .pz-btn.primary in the lobby with an
+   invalid gradient → dark text on dark background, i.e. an invisible button). */
+:root {
+  --accent: #1ab28c;
+  --accent-bright: #6df3cf;
+  --bg: #0a1310;
+  --panel: rgba(10, 24, 19, 0.72);
+  --border: rgba(109, 243, 207, 0.18);
+  --text: #cfe9df;
+  --text-bright: #eafff8;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100dvh;
+}
+
+body {
+  background: #0a1310;
+  color: #cfe9df;
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}

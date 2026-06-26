@@ -1,0 +1,148 @@
+import { useCallback, useState } from 'react';
+
+import type { PazaakEvent, Seat, SeatState } from '../engine';
+import { type Banner, type Display, type DisplayCard, EMPTY_DISPLAY } from './controller';
+import { playPazaakSound } from './sounds';
+
+const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+let cardSeq = 0;
+
+/**
+ * Rebuild the full board straight from a per-seat snapshot (no animation). Used when a peer
+ * (re)connects mid-match: the event stream that built the board is gone, but the snapshot
+ * carries both tables, totals, standing flags and the score — enough to render the board as
+ * it stands and pick the turn back up.
+ */
+function snapshotToDisplay(state: SeatState, mySeat: Seat): Display {
+  const toCards = (cards: [string, number][]): DisplayCard[] =>
+    cards.map(([label]) => ({ key: `c${cardSeq++}`, label }));
+  const other = (1 - mySeat) as Seat;
+  const tables: [DisplayCard[], DisplayCard[]] = [[], []];
+  tables[mySeat] = toCards(state.you.table);
+  tables[other] = toCards(state.opponent.table);
+  const totals: [number, number] = [0, 0];
+  totals[mySeat] = state.you.total;
+  totals[other] = state.opponent.total;
+  const standing: [boolean, boolean] = [false, false];
+  standing[mySeat] = state.you.standing;
+  standing[other] = state.opponent.standing;
+  const scores: [number, number] = [0, 0];
+  scores[mySeat] = state.match_score.you;
+  scores[other] = state.match_score.opponent;
+  return { tables, totals, standing, scores, setNumber: state.set_number };
+}
+
+/**
+ * Shared event-stream player: turns a `PazaakEvent[]` into board animation (cards dealt,
+ * KotOR sound cues, set/match banners). Used by both the local hot-seat controller and the
+ * networked host/guest — they differ only in where the events come from.
+ *
+ * `mySeat` frames win/lose sounds and banner wording: pass a seat for online play
+ * ("You win" + winset/loseset from that seat), or `null` for the neutral hot-seat framing
+ * ("Player N wins").
+ */
+export function useReplay(mySeat: Seat | null) {
+  const [display, setDisplay] = useState<Display>(EMPTY_DISPLAY);
+  const [banner, setBanner] = useState<Banner | null>(null);
+  const [finished, setFinished] = useState(false);
+
+  const appendCard = useCallback((actor: Seat, label: string, total: number) => {
+    setDisplay((d) => {
+      const tables: [DisplayCard[], DisplayCard[]] = [d.tables[0], d.tables[1]];
+      tables[actor] = [...tables[actor], { key: `c${cardSeq++}`, label }];
+      const totals: [number, number] = [d.totals[0], d.totals[1]];
+      totals[actor] = total;
+      return { ...d, tables, totals };
+    });
+  }, []);
+
+  const resetDisplay = useCallback(() => {
+    setDisplay(EMPTY_DISPLAY);
+    setBanner(null);
+    setFinished(false);
+  }, []);
+
+  const replay = useCallback(
+    async (events: PazaakEvent[]) => {
+      for (const ev of events) {
+        switch (ev.type) {
+          case 'draw':
+            appendCard(ev.actor, ev.card, ev.total);
+            playPazaakSound(ev.total > 20 ? 'warnbust' : 'drawmain');
+            await sleep(420);
+            break;
+          case 'play':
+            appendCard(ev.actor, ev.card, ev.total);
+            playPazaakSound('playside');
+            await sleep(420);
+            break;
+          case 'stand':
+            setDisplay((d) => {
+              const standing: [boolean, boolean] = [d.standing[0], d.standing[1]];
+              standing[ev.actor] = true;
+              return { ...d, standing };
+            });
+            await sleep(220);
+            break;
+          case 'end_turn':
+            await sleep(140);
+            break;
+          case 'set_over': {
+            const winner = ev.winner;
+            const tie = winner == null;
+            const iWon = mySeat != null && winner === mySeat;
+            await sleep(280);
+            if (tie) playPazaakSound('drawmain');
+            else if (mySeat == null) playPazaakSound('winset');
+            else playPazaakSound(iWon ? 'winset' : 'loseset');
+            setBanner({ kind: 'set', text: setBannerText(ev.winner, ev.totals, mySeat) });
+            await sleep(1500);
+            setDisplay((d) => ({
+              tables: [[], []],
+              totals: [0, 0],
+              standing: [false, false],
+              scores: [d.scores[0] + (winner === 0 ? 1 : 0), d.scores[1] + (winner === 1 ? 1 : 0)],
+              setNumber: d.setNumber + 1,
+            }));
+            setBanner(null);
+            await sleep(240);
+            break;
+          }
+          case 'match_over': {
+            const iWon = mySeat != null && ev.winner === mySeat;
+            playPazaakSound(mySeat == null || iWon ? 'winmatch' : 'losematch');
+            setBanner({ kind: 'match', text: matchBannerText(ev.winner, mySeat) });
+            setFinished(true);
+            break;
+          }
+        }
+      }
+    },
+    [appendCard, mySeat],
+  );
+
+  /** Render a snapshot directly, skipping animation (reconnect / resync). */
+  const showSnapshot = useCallback(
+    (state: SeatState) => {
+      setDisplay(snapshotToDisplay(state, mySeat ?? 0));
+      setBanner(null);
+      setFinished(state.over);
+    },
+    [mySeat],
+  );
+
+  return { display, banner, finished, replay, resetDisplay, showSnapshot, setBanner, setFinished };
+}
+
+function setBannerText(winner: Seat | null, totals: [number, number], mySeat: Seat | null): string {
+  if (winner == null) return `Tie ${totals[0]}–${totals[1]}. Replaying the set.`;
+  if (mySeat == null) return `Player ${winner + 1} wins the set · ${totals[0]}–${totals[1]}`;
+  const mine = totals[mySeat];
+  const theirs = totals[1 - mySeat];
+  return `${winner === mySeat ? 'You win' : 'Opponent wins'} the set · ${mine}–${theirs}`;
+}
+
+function matchBannerText(winner: Seat, mySeat: Seat | null): string {
+  if (mySeat == null) return `Player ${winner + 1} wins the match.`;
+  return winner === mySeat ? 'You win the match.' : 'Opponent wins the match.';
+}

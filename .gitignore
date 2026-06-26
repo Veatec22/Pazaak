@@ -1,0 +1,13 @@
+node_modules/
+dist/
+*.local
+.DS_Store
+.vite/
+coverage/
+.idea/
+.vscode/
+*.tsbuildinfo
+.playwright-mcp/
+*.png
+!public/**/*.png
+.temp/

@@ -1,0 +1,106 @@
+.pz-lobby {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: clamp(16px, 5vw, 48px);
+  text-align: center;
+  color: #cfe9df;
+  background:
+    radial-gradient(1200px 600px at 50% -10%, rgba(26, 178, 140, 0.14), transparent 60%),
+    #0a1310;
+}
+.pz-lobby h1 {
+  margin: 0;
+  font-size: clamp(2.2rem, 8vw, 4rem);
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: #eafff8;
+  text-shadow: 0 0 30px rgba(26, 178, 140, 0.45);
+}
+.pz-tag {
+  margin: 0 0 14px;
+  max-width: 30ch;
+  opacity: 0.75;
+  font-size: 0.95rem;
+}
+.pz-lobby-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: min(360px, 90vw);
+}
+.pz-btn.big {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 18px;
+  font-size: 1.05rem;
+}
+.pz-btn.big small {
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  opacity: 0.7;
+  font-size: 0.78rem;
+}
+
+/* share bar (host, online) */
+.pz-share {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px clamp(12px, 3vw, 24px);
+  background: rgba(2, 14, 10, 0.92);
+  border-bottom: 1px solid rgba(109, 243, 207, 0.18);
+  backdrop-filter: blur(6px);
+}
+.pz-share-label {
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.7;
+  white-space: nowrap;
+}
+.pz-share-url {
+  flex: 1;
+  min-width: 0;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(109, 243, 207, 0.18);
+  color: #eafff8;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 0.85rem;
+}
+
+.pz-leave {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  z-index: 45;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(109, 243, 207, 0.18);
+  color: #cfe9df;
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+.pz-leave:hover {
+  border-color: #1ab28c;
+  color: #eafff8;
+}
+
+/* when a fixed share bar is present, nudge the board down a touch on small screens */
+@media (max-width: 640px) {
+  .pz-share {
+    flex-wrap: wrap;
+  }
+}
