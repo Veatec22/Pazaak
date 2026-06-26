@@ -1,18 +1,23 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { MatchSession, PazaakGame, randomSideDeck, SeededRng, chooseBotAction } from '../engine';
-import type { ActionDict, SeatState } from '../engine';
+import { aiDeck, CAMPAIGN_LENGTH, chooseBotAction, MatchSession, PazaakGame, playerDeck, SeededRng } from '../engine';
+import type { ActionDict, Difficulty, SeatState } from '../engine';
 import type { MatchController } from './controller';
 import { useReplay } from './replay';
 import { playPazaakSound, primePazaakSounds } from './sounds';
 
 const BOT_DELAY_MS = 800;
 
+export interface SinglePlayerOptions {
+  /** Which pool the player's deck is drawn from. Default: 'normal' (flip + classic). */
+  difficulty: Difficulty;
+  /** Which campaign tier the AI plays (0..CAMPAIGN_LENGTH-1). Default: random. */
+  tierIndex: number;
+  /** Called once when the match ends, with whether the human (seat 0) won. */
+  onResult: (won: boolean) => void;
+}
 
-
-
-
-export function useSinglePlayerMatch(): MatchController {
+export function useSinglePlayerMatch(opts: Partial<SinglePlayerOptions> = {}): MatchController {
 
   const { display, banner, finished, replay, resetDisplay } = useReplay(0);
   const [view, setView] = useState<SeatState | null>(null);
@@ -21,6 +26,9 @@ export function useSinglePlayerMatch(): MatchController {
   const sessionRef = useRef<MatchSession | null>(null);
   const startedRef = useRef(false);
   const botTimeoutRef = useRef<number | null>(null);
+  const optsRef = useRef(opts);
+  optsRef.current = opts;
+  const resultFiredRef = useRef(false);
 
   const runBotTurn = useCallback(async () => {
     const session = sessionRef.current;
@@ -46,6 +54,10 @@ export function useSinglePlayerMatch(): MatchController {
     if (session.isOver) {
       setView(session.stateFor(0));
       setBusy(false);
+      if (!resultFiredRef.current) {
+        resultFiredRef.current = true;
+        optsRef.current.onResult?.(session.game.winner === 0);
+      }
       return;
     }
 
@@ -68,9 +80,12 @@ export function useSinglePlayerMatch(): MatchController {
       window.clearTimeout(botTimeoutRef.current);
     }
     const rng = new SeededRng((Math.random() * 1e9) >>> 0);
-    const game = new PazaakGame(randomSideDeck(rng), randomSideDeck(rng), { rng });
+    const difficulty = optsRef.current.difficulty ?? 'normal';
+    const tier = optsRef.current.tierIndex ?? rng.randint(0, CAMPAIGN_LENGTH - 1);
+    const game = new PazaakGame(playerDeck(rng, difficulty), aiDeck(tier), { rng });
     const session = new MatchSession(game);
     sessionRef.current = session;
+    resultFiredRef.current = false;
 
     resetDisplay();
     setView(null);
@@ -100,7 +115,6 @@ export function useSinglePlayerMatch(): MatchController {
 
       void (async () => {
         setBusy(true);
-        setView(null);
         const events = session.apply(action);
         await replay(events);
         settle();

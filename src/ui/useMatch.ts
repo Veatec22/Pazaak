@@ -54,7 +54,6 @@ export function useMatch(): MatchController {
       if (!session || busy || finished) return;
       void (async () => {
         setBusy(true);
-        setView(null);
         const events = session.apply(action);
         await replay(events);
         settle();

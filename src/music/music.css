@@ -1,0 +1,140 @@
+.pz-music-container {
+  position: relative;
+  display: inline-block;
+  pointer-events: auto;
+}
+
+/* "now playing" dot on the topbar button */
+.pz-music-dot {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #6df3cf;
+  box-shadow: 0 0 8px #6df3cf;
+  animation: pz-music-pulse 1.1s ease-in-out infinite;
+}
+@keyframes pz-music-pulse {
+  50% {
+    opacity: 0.3;
+    transform: scale(0.7);
+  }
+}
+
+.pz-music-dropdown {
+  position: absolute;
+  top: 48px;
+  right: 0;
+  z-index: 50;
+  width: 250px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  background: rgba(5, 18, 14, 0.96);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow:
+    0 10px 25px rgba(0, 0, 0, 0.6),
+    0 0 15px rgba(26, 178, 140, 0.15);
+  animation: fadeInDown 0.15s ease-out;
+}
+
+.pz-music-meta {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+.pz-music-title {
+  font-weight: 700;
+  color: var(--text-bright);
+  font-size: 0.95rem;
+}
+.pz-music-game {
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #6df3cf;
+  opacity: 0.85;
+}
+
+.pz-music-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pz-music-time {
+  font-size: 0.7rem;
+  color: var(--text-mute);
+  font-variant-numeric: tabular-nums;
+  min-width: 30px;
+  text-align: center;
+}
+.pz-music-progress input[type='range'] {
+  flex: 1;
+  min-width: 0;
+  accent-color: #1ab28c;
+  cursor: pointer;
+}
+
+.pz-music-ctrls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.pz-music-ctrls button,
+.pz-music-vol button {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.pz-music-ctrls button:hover,
+.pz-music-vol button:hover {
+  color: var(--text-bright);
+  border-color: #1ab28c;
+}
+.pz-music-ctrls button.primary {
+  width: 38px;
+  height: 38px;
+  background: rgba(26, 178, 140, 0.2);
+  border-color: rgba(109, 243, 207, 0.45);
+  color: var(--text-bright);
+}
+.pz-music-ctrls button.primary:hover {
+  background: #1ab28c;
+  color: #04140f;
+}
+.pz-music-ctrls button.on {
+  color: #6df3cf;
+  border-color: #1ab28c;
+  box-shadow: inset 0 0 8px rgba(26, 178, 140, 0.25);
+}
+
+.pz-music-vol {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pz-music-vol input[type='range'] {
+  flex: 1;
+  min-width: 0;
+  accent-color: #1ab28c;
+  cursor: pointer;
+}
+
+@media (max-width: 640px) {
+  .pz-music-dropdown {
+    width: min(250px, calc(100vw - 24px));
+  }
+}

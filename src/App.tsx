@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { MainMenu, MultiplayerMenu, SinglePlayerMenu, ShareBar, WaitingRoom } from './Lobby';
+import { MusicProvider } from './music/MusicProvider';
 import { useOnlineMatch } from './net/useOnlineMatch';
+import { installClickSound } from './ui/uiSounds';
 import { getSavedNickname, useLobbyAnnouncer } from './net/useLobby';
 import { Board } from './ui/Board';
 import { useMatch } from './ui/useMatch';
@@ -45,6 +47,8 @@ export default function App() {
     return () => window.removeEventListener('hashchange', onHash);
   }, []);
 
+  useEffect(() => installClickSound(), []); // KotOR click cue on every button press
+
   const goToSinglePlayer = useCallback(() => {
     location.hash = 'singleplayer';
   }, []);
@@ -76,22 +80,24 @@ export default function App() {
     location.hash = 'singleplayer';
   }, []);
 
+  let content;
   if (route.mode === 'main-menu') {
-    return <MainMenu onGoSinglePlayer={goToSinglePlayer} onGoMultiplayer={goToMultiplayer} onHotSeat={hotSeat} />;
+    content = <MainMenu onGoSinglePlayer={goToSinglePlayer} onGoMultiplayer={goToMultiplayer} onHotSeat={hotSeat} />;
+  } else if (route.mode === 'single-menu') {
+    content = <SinglePlayerMenu onPlayBot={playBot} onLeave={leave} />;
+  } else if (route.mode === 'single-game') {
+    content = <SinglePlayerGame onLeave={leaveSingleGame} />;
+  } else if (route.mode === 'multi-menu') {
+    content = <MultiplayerMenu onPlayFriend={playFriend} onLeave={leave} />;
+  } else if (route.mode === 'hotseat') {
+    content = <HotSeatGame onLeave={leave} />;
+  } else {
+    content = <OnlineGame roomId={route.roomId} isHost={route.isHost} onLeave={leave} />;
   }
-  if (route.mode === 'single-menu') {
-    return <SinglePlayerMenu onPlayBot={playBot} onLeave={leave} />;
-  }
-  if (route.mode === 'single-game') {
-    return <SinglePlayerGame onLeave={leaveSingleGame} />;
-  }
-  if (route.mode === 'multi-menu') {
-    return <MultiplayerMenu onPlayFriend={playFriend} onLeave={leave} />;
-  }
-  if (route.mode === 'hotseat') {
-    return <HotSeatGame onLeave={leave} />;
-  }
-  return <OnlineGame roomId={route.roomId} isHost={route.isHost} onLeave={leave} />;
+
+  // MusicProvider owns the persistent <audio>, so the cantina music keeps playing across
+  // every screen; the controls themselves live in the TopBar.
+  return <MusicProvider>{content}</MusicProvider>;
 }
 
 function HotSeatGame({ onLeave }: { onLeave: () => void }) {

@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useLobby, useNickname, getRandomNickname } from './net/useLobby';
 import { useI18n } from './net/useI18n';
+import { MusicControls } from './music/MusicControls';
 import './lobby.css';
 
 
@@ -108,6 +109,7 @@ export function TopBar() {
       )}
 
       <div className="pz-top-bar">
+        <MusicControls />
         <div className="pz-lang-container">
           <button
             className={`pz-topbar-btn ${showLangDropdown ? 'active' : ''}`}
@@ -228,36 +230,39 @@ export function MainMenu({
   return (
     <div className="pz-lobby pz-main-menu">
       <TopBar />
-      <div className="pz-logo-container">
-        <h1>Pazaak</h1>
-        <div className="pz-logo-subtitle">{t('logo_subtitle')}</div>
-      </div>
-      <p className="pz-tag">{t('menu_tagline')}</p>
+      <div className="pz-lobby-content">
+        <div className="pz-logo-container">
+          <img className="pz-logo-img" src={`${import.meta.env.BASE_URL}brand/logo-256.png`} alt="" width={104} height={104} />
+          <h1>Pazaak</h1>
+          <div className="pz-logo-subtitle">{t('logo_subtitle')}</div>
+        </div>
+        <p className="pz-tag">{t('menu_tagline')}</p>
 
-      <div className="pz-lobby-actions">
-        <button className="pz-btn primary big" onClick={onGoSinglePlayer}>
-          <span className="pz-btn-title">
-            <User size={20} />
-            {t('single_player')}
-          </span>
-          <small>{t('single_player_desc')}</small>
-        </button>
+        <div className="pz-lobby-actions">
+          <button className="pz-btn primary big" onClick={onGoSinglePlayer}>
+            <span className="pz-btn-title">
+              <User size={20} />
+              {t('single_player')}
+            </span>
+            <small>{t('single_player_desc')}</small>
+          </button>
 
-        <button className="pz-btn big" onClick={onGoMultiplayer}>
-          <span className="pz-btn-title">
-            <Users size={20} />
-            {t('multiplayer')}
-          </span>
-          <small>{t('multiplayer_desc')}</small>
-        </button>
+          <button className="pz-btn big" onClick={onGoMultiplayer}>
+            <span className="pz-btn-title">
+              <Users size={20} />
+              {t('multiplayer')}
+            </span>
+            <small>{t('multiplayer_desc')}</small>
+          </button>
 
-        <button className="pz-btn big" onClick={onHotSeat}>
-          <span className="pz-btn-title">
-            <Gamepad2 size={20} />
-            {t('pass_and_play')}
-          </span>
-          <small>{t('pass_and_play_desc')}</small>
-        </button>
+          <button className="pz-btn big" onClick={onHotSeat}>
+            <span className="pz-btn-title">
+              <Gamepad2 size={20} />
+              {t('pass_and_play')}
+            </span>
+            <small>{t('pass_and_play_desc')}</small>
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -305,133 +310,134 @@ export function MultiplayerMenu({
         <ArrowLeft size={16} /> {t('btn_back')}
       </button>
 
-      <h2>{t('multiplayer')}</h2>
+      <div className="pz-lobby-content">
+        <h2>{t('multiplayer')}</h2>
 
-      { }
-      <div className="pz-nickname-panel">
-        <label htmlFor="nickname">{t('your_nickname')}</label>
-        <div className="pz-nickname-input-group">
-          <input
-            id="nickname"
-            type="text"
-            value={nickname}
-            onChange={(e) => setNickname(e.target.value)}
-            maxLength={20}
-            placeholder={t('placeholder_nickname')}
-          />
-          <button
-            className="pz-btn icon-btn"
-            onClick={handleRandomizeName}
-            title={t('placeholder_nickname')}
-            aria-label="Randomize Name"
-          >
-            <Dices size={18} />
-          </button>
+        <div className="pz-nickname-panel">
+          <label htmlFor="nickname">{t('your_nickname')}</label>
+          <div className="pz-nickname-input-group">
+            <input
+              id="nickname"
+              type="text"
+              value={nickname}
+              onChange={(e) => setNickname(e.target.value)}
+              maxLength={20}
+              placeholder={t('placeholder_nickname')}
+            />
+            <button
+              className="pz-btn icon-btn"
+              onClick={handleRandomizeName}
+              title={t('placeholder_nickname')}
+              aria-label="Randomize Name"
+            >
+              <Dices size={18} />
+            </button>
+          </div>
         </div>
-      </div>
 
-      <div className="pz-lobby-actions">
-        <button className="pz-btn primary big" onClick={onPlayFriend}>
-          <span className="pz-btn-title">
-            <Plus size={20} />
-            {t('create_match')}
-          </span>
-          <small>{t('create_match_desc')}</small>
-        </button>
+        <div className="pz-lobby-actions">
+          <button className="pz-btn primary big" onClick={onPlayFriend}>
+            <span className="pz-btn-title">
+              <Plus size={20} />
+              {t('create_match')}
+            </span>
+            <small>{t('create_match_desc')}</small>
+          </button>
 
-        <button
-          className={`pz-btn big ${activeTab === 'join' ? 'active' : ''}`}
-          onClick={() => setActiveTab(activeTab === 'join' ? 'none' : 'join')}
-        >
-          <span className="pz-btn-title">
-            <Key size={20} />
-            {t('join_via_code')}
-          </span>
-          <small>{t('join_via_code_desc')}</small>
-        </button>
+          <button
+            className={`pz-btn big ${activeTab === 'join' ? 'active' : ''}`}
+            onClick={() => setActiveTab(activeTab === 'join' ? 'none' : 'join')}
+          >
+            <span className="pz-btn-title">
+              <Key size={20} />
+              {t('join_via_code')}
+            </span>
+            <small>{t('join_via_code_desc')}</small>
+          </button>
 
-        {activeTab === 'join' && (
-          <div className="pz-modal-overlay" onClick={() => setActiveTab('none')}>
-            <div className="pz-modal-card" onClick={(e) => e.stopPropagation()}>
-              <div className="pz-modal-header">
-                <h3>{t('join_match_title')}</h3>
-                <button className="pz-modal-close" onClick={() => setActiveTab('none')}>
-                  <X size={20} />
-                </button>
-              </div>
-              <div className="pz-modal-body">
-                <form className="pz-join-form" onSubmit={handleJoinSubmit}>
-                  <input
-                    type="text"
-                    placeholder={t('placeholder_join')}
-                    value={joinCode}
-                    onChange={(e) => setJoinCode(e.target.value)}
-                    autoFocus
-                  />
-                  <button className="pz-btn primary" type="submit" disabled={!joinCode.trim()}>
-                    <Key size={16} style={{ marginRight: '6px' }} />
-                    {t('btn_connect')}
+          {activeTab === 'join' && (
+            <div className="pz-modal-overlay" onClick={() => setActiveTab('none')}>
+              <div className="pz-modal-card" onClick={(e) => e.stopPropagation()}>
+                <div className="pz-modal-header">
+                  <h3>{t('join_match_title')}</h3>
+                  <button className="pz-modal-close" onClick={() => setActiveTab('none')}>
+                    <X size={20} />
                   </button>
-                </form>
+                </div>
+                <div className="pz-modal-body">
+                  <form className="pz-join-form" onSubmit={handleJoinSubmit}>
+                    <input
+                      type="text"
+                      placeholder={t('placeholder_join')}
+                      value={joinCode}
+                      onChange={(e) => setJoinCode(e.target.value)}
+                      autoFocus
+                    />
+                    <button className="pz-btn primary" type="submit" disabled={!joinCode.trim()}>
+                      <Key size={16} style={{ marginRight: '6px' }} />
+                      {t('btn_connect')}
+                    </button>
+                  </form>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        <button
-          className={`pz-btn big ${activeTab === 'search' ? 'active' : ''}`}
-          onClick={() => setActiveTab(activeTab === 'search' ? 'none' : 'search')}
-        >
-          <span className="pz-btn-title">
-            <Search size={20} />
-            {t('browse_matches')}
-          </span>
-          <small>{t('browse_matches_desc')}</small>
-        </button>
+          <button
+            className={`pz-btn big ${activeTab === 'search' ? 'active' : ''}`}
+            onClick={() => setActiveTab(activeTab === 'search' ? 'none' : 'search')}
+          >
+            <span className="pz-btn-title">
+              <Search size={20} />
+              {t('browse_matches')}
+            </span>
+            <small>{t('browse_matches_desc')}</small>
+          </button>
 
-        {activeTab === 'search' && (
-          <div className="pz-modal-overlay" onClick={() => setActiveTab('none')}>
-            <div className="pz-modal-card" onClick={(e) => e.stopPropagation()}>
-              <div className="pz-modal-header">
-                <h3>{t('active_servers')}</h3>
-                <button className="pz-modal-close" onClick={() => setActiveTab('none')}>
-                  <X size={20} />
-                </button>
-              </div>
-              <div className="pz-modal-body">
-                {connecting ? (
-                  <div className="pz-lobby-status">
-                    <span className="pz-spinner"></span> {t('scanning_holonet')}
-                  </div>
-                ) : activeGames.length === 0 ? (
-                  <div className="pz-lobby-empty">{t('no_active_games')}</div>
-                ) : (
-                  <div className="pz-server-grid">
-                    {activeGames.map((game) => (
-                      <div className="pz-server-card" key={game.peerId}>
-                        <div className="pz-server-info">
-                          <span className="pz-server-host">{game.hostName}</span>
-                          <span className="pz-server-code">
-                            {t('server_code')}: {game.roomId}
-                          </span>
+          {activeTab === 'search' && (
+            <div className="pz-modal-overlay" onClick={() => setActiveTab('none')}>
+              <div className="pz-modal-card" onClick={(e) => e.stopPropagation()}>
+                <div className="pz-modal-header">
+                  <h3>{t('active_servers')}</h3>
+                  <button className="pz-modal-close" onClick={() => setActiveTab('none')}>
+                    <X size={20} />
+                  </button>
+                </div>
+                <div className="pz-modal-body">
+                  {connecting ? (
+                    <div className="pz-lobby-status">
+                      <span className="pz-spinner"></span> {t('scanning_holonet')}
+                    </div>
+                  ) : activeGames.length === 0 ? (
+                    <div className="pz-lobby-empty">{t('no_active_games')}</div>
+                  ) : (
+                    <div className="pz-server-grid">
+                      {activeGames.map((game) => (
+                        <div className="pz-server-card" key={game.peerId}>
+                          <div className="pz-server-info">
+                            <span className="pz-server-host">{game.hostName}</span>
+                            <span className="pz-server-code">
+                              {t('server_code')}: {game.roomId}
+                            </span>
+                          </div>
+                          <button
+                            className="pz-btn primary sm"
+                            onClick={() => {
+                              location.hash = `room=${game.roomId}`;
+                            }}
+                          >
+                            <Users size={14} style={{ marginRight: '6px' }} />
+                            {t('btn_join')}
+                          </button>
                         </div>
-                        <button
-                          className="pz-btn primary sm"
-                          onClick={() => {
-                            location.hash = `room=${game.roomId}`;
-                          }}
-                        >
-                          <Users size={14} style={{ marginRight: '6px' }} />
-                          {t('btn_join')}
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
@@ -477,45 +483,47 @@ export function WaitingRoom({ roomId, onLeave }: { roomId: string; onLeave: () =
         <ArrowLeft size={16} /> {t('btn_cancel')}
       </button>
 
-      <div className="pz-waiting-card">
-        <div className="pz-waiting-header">
-          <h2>{t('room_created')}</h2>
-          <div className="pz-pulse-status">
-            <span className="pz-pulse-dot"></span> {t('waiting_opponent')}
-          </div>
-        </div>
-
-        <div className="pz-waiting-fields">
-          <div className="pz-waiting-field">
-            <label>{t('room_code')}</label>
-            <div className="pz-input-row">
-              <input readOnly value={roomId} className="pz-share-url" />
-              <button className="pz-btn" onClick={copyCode}>
-                <Copy size={14} style={{ marginRight: '6px' }} />
-                {copiedCode ? t('btn_copied') : t('btn_copy')}
-              </button>
+      <div className="pz-lobby-content">
+        <div className="pz-waiting-card">
+          <div className="pz-waiting-header">
+            <h2>{t('room_created')}</h2>
+            <div className="pz-pulse-status">
+              <span className="pz-pulse-dot"></span> {t('waiting_opponent')}
             </div>
           </div>
 
-          <div className="pz-waiting-field">
-            <label>{t('invite_link')}</label>
-            <div className="pz-input-row">
-              <input readOnly value={url} className="pz-share-url" onFocus={(e) => e.currentTarget.select()} />
-              <button className="pz-btn" onClick={copyLink}>
-                <Copy size={14} style={{ marginRight: '6px' }} />
-                {copiedLink ? t('btn_copied') : t('btn_copy')}
-              </button>
+          <div className="pz-waiting-fields">
+            <div className="pz-waiting-field">
+              <label>{t('room_code')}</label>
+              <div className="pz-input-row">
+                <input readOnly value={roomId} className="pz-share-url" />
+                <button className="pz-btn" onClick={copyCode}>
+                  <Copy size={14} style={{ marginRight: '6px' }} />
+                  {copiedCode ? t('btn_copied') : t('btn_copy')}
+                </button>
+              </div>
+            </div>
+
+            <div className="pz-waiting-field">
+              <label>{t('invite_link')}</label>
+              <div className="pz-input-row">
+                <input readOnly value={url} className="pz-share-url" onFocus={(e) => e.currentTarget.select()} />
+                <button className="pz-btn" onClick={copyLink}>
+                  <Copy size={14} style={{ marginRight: '6px' }} />
+                  {copiedLink ? t('btn_copied') : t('btn_copy')}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="pz-waiting-actions">
-          {canShare && (
-            <button className="pz-btn primary" onClick={share}>
-              <Share2 size={16} style={{ marginRight: '8px' }} />
-              {t('btn_share_link')}
-            </button>
-          )}
+          <div className="pz-waiting-actions">
+            {canShare && (
+              <button className="pz-btn primary" onClick={share}>
+                <Share2 size={16} style={{ marginRight: '8px' }} />
+                {t('btn_share_link')}
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -588,32 +596,34 @@ export function SinglePlayerMenu({
         <ArrowLeft size={16} /> {t('btn_back')}
       </button>
 
-      <h2>{t('single_player_title')}</h2>
+      <div className="pz-lobby-content">
+        <h2>{t('single_player_title')}</h2>
 
-      <div className="pz-lobby-actions">
-        <button className="pz-btn primary big" onClick={onPlayBot}>
-          <span className="pz-btn-title">
-            <Gamepad2 size={20} />
-            {t('quick_play')}
-          </span>
-          <small>{t('quick_play_desc')}</small>
-        </button>
+        <div className="pz-lobby-actions">
+          <button className="pz-btn primary big" onClick={onPlayBot}>
+            <span className="pz-btn-title">
+              <Gamepad2 size={20} />
+              {t('quick_play')}
+            </span>
+            <small>{t('quick_play_desc')}</small>
+          </button>
 
-        <button className="pz-btn big disabled" disabled title={t('campaign_desc')}>
-          <span className="pz-btn-title">
-            <Trophy size={20} />
-            {t('campaign')}
-          </span>
-          <small>{t('campaign_desc')}</small>
-        </button>
+          <button className="pz-btn big disabled" disabled title={t('campaign_desc')}>
+            <span className="pz-btn-title">
+              <Trophy size={20} />
+              {t('campaign')}
+            </span>
+            <small>{t('campaign_desc')}</small>
+          </button>
 
-        <button className="pz-btn big disabled" disabled title={t('deck_builder_desc')}>
-          <span className="pz-btn-title">
-            <Layers size={20} />
-            {t('deck_builder')}
-          </span>
-          <small>{t('deck_builder_desc')}</small>
-        </button>
+          <button className="pz-btn big disabled" disabled title={t('deck_builder_desc')}>
+            <span className="pz-btn-title">
+              <Layers size={20} />
+              {t('deck_builder')}
+            </span>
+            <small>{t('deck_builder_desc')}</small>
+          </button>
+        </div>
       </div>
     </div>
   );

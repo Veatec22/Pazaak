@@ -9,14 +9,14 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['icon.svg', 'icon-192.png', 'icon-512.png'],
+      includeAssets: ['brand/favicon-48.png', 'brand/logo-192.png', 'brand/logo-512.png'],
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,wav}'],
         maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
         navigateFallback: 'index.html',
       },
       manifest: {
-        name: 'Pazaak 1v1',
+        name: 'Pazaak — Republic Cantina Edition',
         short_name: 'Pazaak',
         description: 'Play pazaak (the KotOR card game) against a friend, peer-to-peer.',
         start_url: '.',
@@ -25,11 +25,10 @@ export default defineConfig({
         display: 'standalone',
         orientation: 'any',
         icons: [
-          { src: 'icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
-          { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
-          { src: 'icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'maskable' },
-          { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
-          { src: 'icon.svg', sizes: 'any', type: 'image/svg+xml' },
+          { src: 'brand/logo-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: 'brand/logo-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          { src: 'brand/logo-192.png', sizes: '192x192', type: 'image/png', purpose: 'maskable' },
+          { src: 'brand/logo-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
     }),

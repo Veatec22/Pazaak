@@ -64,7 +64,6 @@ export function useOnlineMatch(roomId: string, isHost: boolean): MatchController
       if (!s || s.isOver || s.current !== fromSeat) return;
       void (async () => {
         setBusy(true);
-        putView(null);
         const events = s.apply(action);
         sendSyncRef.current?.({ kind: 'events', events, state: s.stateFor(GUEST_SEAT) });
         await replay(events);
@@ -108,8 +107,10 @@ export function useOnlineMatch(roomId: string, isHost: boolean): MatchController
           settleGuest(msg.state);
           return;
         }
-        putView(null);
-        if (msg.kind === 'start') resetDisplay();
+        if (msg.kind === 'start') {
+          putView(null);
+          resetDisplay();
+        }
         await replay(msg.events);
         settleGuest(msg.state);
       });
@@ -174,7 +175,6 @@ export function useOnlineMatch(roomId: string, isHost: boolean): MatchController
       if (isHost) {
         applyHost(action, HOST_SEAT);
       } else {
-        putView(null);
         setBusy(true);
         sendActRef.current?.({ action });
       }

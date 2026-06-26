@@ -2,13 +2,18 @@
 
 
 :root {
+  /* KotOR terminal teal — re-grounded on the HK-47 palette (richer teal text, solid
+     dark-teal borders) instead of the washed grey-green it had before. */
   --accent: #1ab28c;
   --accent-bright: #6df3cf;
-  --bg: #0a1310;
+  --accent-soft: rgba(26, 178, 140, 0.12);
+  --bg: #070f0d;
   --panel: rgba(10, 24, 19, 0.72);
-  --border: rgba(109, 243, 207, 0.18);
-  --text: #cfe9df;
-  --text-bright: #eafff8;
+  --border: #0d5945;
+  --border-soft: rgba(109, 243, 207, 0.14);
+  --text: #4fcfac;
+  --text-bright: #e8fff7;
+  --text-mute: #2c8d75;
 }
 
 * {
@@ -25,8 +30,8 @@ body,
 }
 
 body {
-  background: #0a1310;
-  color: #cfe9df;
+  background: var(--bg);
+  color: var(--text);
   font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
 }

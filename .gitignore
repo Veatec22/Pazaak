@@ -11,3 +11,6 @@ coverage/
 *.png
 !public/**/*.png
 .temp/
+# cantina-music audition clips (temp, local-only; finals live in public/music/)
+public/_audition/
+public/_audition.html
