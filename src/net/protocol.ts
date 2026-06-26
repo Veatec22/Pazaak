@@ -30,6 +30,12 @@ export interface ActMessage {
   action: ActionDict;
 }
 
+/** Host → lobby: announce hosting status to peers in the lobby. */
+export interface LobbyAnnounceMessage {
+  roomId: string;
+  hostName: string;
+}
+
 export type Room = ReturnType<typeof joinRoom>;
 
 export function createRoom(roomId: string): Room {

@@ -1,44 +1,102 @@
 .pz-lobby {
   height: 100dvh;
-  overflow: hidden;
+  overflow: auto; /* Allow scrolling if content overflows, e.g. server list */
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 18px;
-  padding: clamp(16px, 5vw, 48px);
+  gap: 20px;
+  padding: clamp(24px, 5vw, 48px) 16px;
   text-align: center;
   color: #cfe9df;
   background:
-    radial-gradient(1200px 600px at 50% -10%, rgba(26, 178, 140, 0.14), transparent 60%),
-    #0a1310;
+    radial-gradient(1200px 600px at 50% -10%, rgba(26, 178, 140, 0.15), transparent 60%),
+    #070f0d;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+/* Logo container & branding */
+.pz-logo-container {
+  margin-bottom: 8px;
 }
 .pz-lobby h1 {
   margin: 0;
-  font-size: clamp(2.2rem, 8vw, 4rem);
-  letter-spacing: 0.32em;
+  font-size: clamp(2.5rem, 8vw, 4.2rem);
+  letter-spacing: 0.35em;
   text-transform: uppercase;
   color: #eafff8;
-  text-shadow: 0 0 30px rgba(26, 178, 140, 0.45);
+  text-shadow: 0 0 25px rgba(26, 178, 140, 0.5);
+  font-weight: 800;
+  padding-left: 0.35em; /* Center offset due to letter-spacing */
 }
+.pz-logo-subtitle {
+  font-size: clamp(0.7rem, 2vw, 0.9rem);
+  letter-spacing: 0.5em;
+  text-transform: uppercase;
+  color: #1ab28c;
+  margin-top: 4px;
+  text-shadow: 0 0 8px rgba(26, 178, 140, 0.3);
+  font-weight: 600;
+}
+
 .pz-tag {
-  margin: 0 0 14px;
-  max-width: 30ch;
-  opacity: 0.75;
+  margin: 0 0 10px;
+  max-width: 42ch;
+  opacity: 0.8;
   font-size: 0.95rem;
+  line-height: 1.5;
 }
+
+/* Actions list & buttons */
 .pz-lobby-actions {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  width: min(360px, 90vw);
+  width: min(400px, 90vw);
+  z-index: 5;
+}
+
+/* Button enhancements */
+.pz-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(13, 31, 26, 0.6);
+  border: 1px solid rgba(109, 243, 207, 0.25);
+  color: #cfe9df;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  text-transform: uppercase;
+}
+.pz-btn:hover:not(:disabled) {
+  background: rgba(26, 178, 140, 0.15);
+  border-color: #1ab28c;
+  color: #eafff8;
+  box-shadow: 0 0 15px rgba(26, 178, 140, 0.25);
+}
+.pz-btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+.pz-btn.primary {
+  background: rgba(26, 178, 140, 0.25);
+  border-color: rgba(109, 243, 207, 0.5);
+  color: #eafff8;
+}
+.pz-btn.primary:hover:not(:disabled) {
+  background: #1ab28c;
+  border-color: #6df3cf;
+  color: #050d0a;
+  box-shadow: 0 0 20px rgba(26, 178, 140, 0.45);
 }
 .pz-btn.big {
-  display: flex;
   flex-direction: column;
   gap: 4px;
-  padding: 18px;
-  font-size: 1.05rem;
+  padding: 16px 20px;
 }
 .pz-btn.big small {
   font-weight: 400;
@@ -47,8 +105,284 @@
   opacity: 0.7;
   font-size: 0.78rem;
 }
+.pz-btn.disabled,
+.pz-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  border-color: rgba(109, 243, 207, 0.1);
+  background: rgba(10, 20, 18, 0.4);
+  color: #7b9c90;
+}
+.pz-btn.active {
+  background: rgba(26, 178, 140, 0.12);
+  border-color: #1ab28c;
+  box-shadow: inset 0 0 8px rgba(26, 178, 140, 0.2);
+}
 
-/* share bar (host, online) */
+/* Nickname panel */
+.pz-nickname-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  width: min(400px, 90vw);
+}
+.pz-nickname-panel label {
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #1ab28c;
+  font-weight: 700;
+}
+.pz-nickname-input-group {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+.pz-nickname-input-group input {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(109, 243, 207, 0.25);
+  border-radius: 8px;
+  padding: 12px 14px;
+  color: #eafff8;
+  font-size: 1rem;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+  outline: none;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+.pz-nickname-input-group input:focus {
+  border-color: #1ab28c;
+  box-shadow: 0 0 10px rgba(26, 178, 140, 0.2);
+  background: rgba(0, 0, 0, 0.6);
+}
+.pz-nickname-input-group .icon-btn {
+  padding: 10px;
+  font-size: 1.2rem;
+  aspect-ratio: 1;
+}
+
+/* Join form inline */
+.pz-join-form {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  animation: fadeInDown 0.2s ease-out;
+}
+.pz-join-form input {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(109, 243, 207, 0.2);
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: #cfe9df;
+  outline: none;
+  font-size: 0.9rem;
+}
+.pz-join-form input:focus {
+  border-color: #1ab28c;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+/* Server browser list */
+.pz-server-list {
+  background: rgba(3, 14, 11, 0.55);
+  border: 1px solid rgba(109, 243, 207, 0.15);
+  border-radius: 10px;
+  padding: 16px;
+  margin-top: 4px;
+  text-align: left;
+  animation: fadeInDown 0.25s ease-out;
+}
+.pz-server-list h3 {
+  margin: 0 0 12px;
+  font-size: 0.8rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #1ab28c;
+  border-bottom: 1px solid rgba(109, 243, 207, 0.12);
+  padding-bottom: 6px;
+}
+.pz-lobby-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.85rem;
+  color: #7b9c90;
+  padding: 8px 4px;
+}
+.pz-lobby-empty {
+  font-size: 0.85rem;
+  color: #7b9c90;
+  line-height: 1.4;
+  padding: 8px 4px;
+  text-align: center;
+}
+.pz-server-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.pz-server-grid::-webkit-scrollbar {
+  width: 6px;
+}
+.pz-server-grid::-webkit-scrollbar-thumb {
+  background: rgba(26, 178, 140, 0.25);
+  border-radius: 3px;
+}
+.pz-server-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(109, 243, 207, 0.1);
+  border-radius: 8px;
+  padding: 10px 14px;
+  transition: all 0.2s ease;
+}
+.pz-server-card:hover {
+  border-color: rgba(26, 178, 140, 0.4);
+  background: rgba(26, 178, 140, 0.05);
+}
+.pz-server-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.pz-server-host {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #eafff8;
+}
+.pz-server-code {
+  font-size: 0.75rem;
+  font-family: monospace;
+  color: #7b9c90;
+}
+.pz-btn.sm {
+  font-size: 0.75rem;
+  padding: 6px 12px;
+  border-radius: 6px;
+}
+
+/* Spinner */
+.pz-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(109, 243, 207, 0.25);
+  border-top-color: #1ab28c;
+  border-radius: 50%;
+  display: inline-block;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Waiting room overlay */
+.pz-waiting-room {
+  justify-content: center;
+}
+.pz-waiting-card {
+  width: min(440px, 90vw);
+  background: rgba(5, 18, 14, 0.8);
+  border: 1px solid rgba(109, 243, 207, 0.25);
+  border-radius: 16px;
+  padding: 28px clamp(16px, 5vw, 32px);
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.5),
+    0 0 30px rgba(26, 178, 140, 0.1);
+  backdrop-filter: blur(10px);
+  text-align: left;
+  animation: zoomIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.pz-waiting-header {
+  border-bottom: 1px solid rgba(109, 243, 207, 0.15);
+  padding-bottom: 18px;
+  margin-bottom: 20px;
+}
+.pz-waiting-header h2 {
+  margin: 0 0 6px;
+  font-size: 1.4rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #eafff8;
+  font-weight: 700;
+}
+.pz-pulse-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: #1ab28c;
+  font-weight: 600;
+}
+.pz-pulse-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #1ab28c;
+  border-radius: 50%;
+  display: inline-block;
+  box-shadow: 0 0 8px #1ab28c;
+  animation: pulse 1.8s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.9); opacity: 0.6; box-shadow: 0 0 0 0 rgba(26, 178, 140, 0.7); }
+  50% { transform: scale(1.1); opacity: 1; box-shadow: 0 0 0 8px rgba(26, 178, 140, 0); }
+  100% { transform: scale(0.9); opacity: 0.6; box-shadow: 0 0 0 0 rgba(26, 178, 140, 0); }
+}
+
+.pz-waiting-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.pz-waiting-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.pz-waiting-field label {
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #1ab28c;
+  font-weight: 700;
+}
+.pz-input-row {
+  display: flex;
+  gap: 8px;
+}
+.pz-input-row input {
+  flex: 1;
+  text-overflow: ellipsis;
+}
+.pz-waiting-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Animations */
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes zoomIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Share bar (host, online) */
 .pz-share {
   position: fixed;
   top: 0;
@@ -65,10 +399,15 @@
 }
 .pz-share-label {
   font-size: 0.75rem;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  opacity: 0.7;
+  color: #cfe9df;
   white-space: nowrap;
+}
+.pz-share-label strong {
+  color: #1ab28c;
+  font-family: monospace;
+  font-size: 0.85rem;
 }
 .pz-share-url {
   flex: 1;
@@ -79,8 +418,13 @@
   border-radius: 6px;
   padding: 8px 10px;
   font-size: 0.85rem;
+  outline: none;
+}
+.pz-share-url:focus {
+  border-color: #1ab28c;
 }
 
+/* Leave button */
 .pz-leave {
   position: fixed;
   top: 10px;
@@ -93,15 +437,26 @@
   padding: 8px 12px;
   cursor: pointer;
   font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.2s ease;
 }
 .pz-leave:hover {
   border-color: #1ab28c;
   color: #eafff8;
+  box-shadow: 0 0 10px rgba(26, 178, 140, 0.2);
 }
 
-/* when a fixed share bar is present, nudge the board down a touch on small screens */
+/* Responsive adjustments */
 @media (max-width: 640px) {
   .pz-share {
     flex-wrap: wrap;
+  }
+  .pz-leave {
+    top: auto;
+    bottom: 12px;
+    left: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
   }
 }

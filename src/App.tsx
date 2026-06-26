@@ -1,11 +1,16 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import { Lobby, ShareBar } from './Lobby';
+import { MainMenu, MultiplayerMenu, ShareBar, WaitingRoom } from './Lobby';
 import { useOnlineMatch } from './net/useOnlineMatch';
+import { getSavedNickname, useLobbyAnnouncer } from './net/useLobby';
 import { Board } from './ui/Board';
 import { useMatch } from './ui/useMatch';
 
-type Route = { mode: 'lobby' } | { mode: 'hotseat' } | { mode: 'online'; roomId: string; isHost: boolean };
+type Route =
+  | { mode: 'main-menu' }
+  | { mode: 'multi-menu' }
+  | { mode: 'hotseat' }
+  | { mode: 'online'; roomId: string; isHost: boolean };
 
 const hostKey = (id: string) => `pz-host-${id}`;
 
@@ -15,7 +20,9 @@ function parseRoute(): Route {
     const roomId = decodeURIComponent(m[1]);
     return { mode: 'online', roomId, isHost: sessionStorage.getItem(hostKey(roomId)) === '1' };
   }
-  return { mode: 'lobby' };
+  const multi = location.hash === '#multiplayer';
+  if (multi) return { mode: 'multi-menu' };
+  return { mode: 'main-menu' };
 }
 
 const newRoomId = () => Math.random().toString(36).slice(2, 8) + Math.random().toString(36).slice(2, 6);
@@ -29,21 +36,35 @@ export default function App() {
     return () => window.removeEventListener('hashchange', onHash);
   }, []);
 
+  const goToMultiplayer = useCallback(() => {
+    location.hash = 'multiplayer';
+  }, []);
+
   const playFriend = useCallback(() => {
     const id = newRoomId();
     sessionStorage.setItem(hostKey(id), '1');
     location.hash = `room=${id}`; // triggers hashchange → parseRoute (isHost true)
   }, []);
 
-  const hotSeat = useCallback(() => setRoute({ mode: 'hotseat' }), []);
+  const hotSeat = useCallback(() => {
+    location.hash = '';
+    setRoute({ mode: 'hotseat' });
+  }, []);
 
   const leave = useCallback(() => {
     history.pushState('', '', location.pathname + location.search);
-    setRoute({ mode: 'lobby' });
+    setRoute({ mode: 'main-menu' });
   }, []);
 
-  if (route.mode === 'lobby') return <Lobby onPlayFriend={playFriend} onHotSeat={hotSeat} />;
-  if (route.mode === 'hotseat') return <HotSeatGame onLeave={leave} />;
+  if (route.mode === 'main-menu') {
+    return <MainMenu onGoMultiplayer={goToMultiplayer} onHotSeat={hotSeat} />;
+  }
+  if (route.mode === 'multi-menu') {
+    return <MultiplayerMenu onPlayFriend={playFriend} onLeave={leave} />;
+  }
+  if (route.mode === 'hotseat') {
+    return <HotSeatGame onLeave={leave} />;
+  }
   return <OnlineGame roomId={route.roomId} isHost={route.isHost} onLeave={leave} />;
 }
 
@@ -59,6 +80,20 @@ function HotSeatGame({ onLeave }: { onLeave: () => void }) {
 
 function OnlineGame({ roomId, isHost, onLeave }: { roomId: string; isHost: boolean; onLeave: () => void }) {
   const controller = useOnlineMatch(roomId, isHost);
+  const nickname = getSavedNickname();
+
+  // Announce the game room in the global lobby as long as host is waiting
+  useLobbyAnnouncer(roomId, nickname, isHost && controller.connection === 'connecting');
+
+  if (isHost && controller.connection === 'connecting') {
+    return (
+      <>
+        <LeaveButton onLeave={onLeave} />
+        <WaitingRoom roomId={roomId} onLeave={onLeave} />
+      </>
+    );
+  }
+
   return (
     <>
       <LeaveButton onLeave={onLeave} />
