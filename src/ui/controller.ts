@@ -3,6 +3,7 @@ import type { ActionDict, Seat, SeatState } from '../engine';
 export interface DisplayCard {
   key: string;
   label: string;
+  family: string;
 }
 
 export interface Display {

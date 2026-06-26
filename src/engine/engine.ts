@@ -52,10 +52,15 @@ export const PlayHandCard = (handIndex: number, optionIndex = 0): PlayHandCard =
   optionIndex,
 });
 
-/** A face-up card on a player's table; `value` is its signed contribution. */
+/**
+ * A face-up card on a player's table; `value` is its signed contribution. `family` is the
+ * source family ("main" for a main-deck draw, otherwise the side card's family — "plus",
+ * "minus", "flip", "dual", …) so the front-end can pick the right art (e.g. two-tone flip).
+ */
 export interface TableCard {
   readonly label: string;
   readonly value: number;
+  readonly family: string;
 }
 
 export class PlayerState {
@@ -80,9 +85,12 @@ export interface SetResult {
   readonly reason: 'bust' | 'higher' | 'nine-cards' | 'tiebreak' | 'tie';
 }
 
+/** A table card as it crosses the view boundary: [label, value, family]. */
+export type TableCardTuple = [string, number, string];
+
 export interface PlayerView {
   total: number;
-  table: [string, number][];
+  table: TableCardTuple[];
   hand: string[];
   hand_options: string[][];
   standing: boolean;
@@ -92,7 +100,7 @@ export interface PlayerView {
 
 export interface OpponentView {
   total: number;
-  table: [string, number][];
+  table: TableCardTuple[];
   hand_size: number;
   standing: boolean;
   sets_won: number;
@@ -183,7 +191,7 @@ export class PazaakGame {
     const me = this.players[player];
     me.playedThisTurn = false;
     const value = this.mainDeck.draw();
-    me.table.push({ label: String(value), value });
+    me.table.push({ label: String(value), value, family: 'main' });
     if (!this.checkFullTable(player)) {
       this.phase = Phase.PLAYER_DECISION;
     }
@@ -196,9 +204,9 @@ export class PazaakGame {
     const play = card.options[action.optionIndex];
     if (play.double) {
       const doubled = me.table.length ? me.table[me.table.length - 1].value : 0;
-      me.table.push({ label: 'x2', value: doubled });
+      me.table.push({ label: 'x2', value: doubled, family: card.family });
     } else {
-      me.table.push({ label: play.label, value: play.delta });
+      me.table.push({ label: play.label, value: play.delta, family: card.family });
     }
     if (play.tiebreak) me.tiebreaker = true;
     me.hand.splice(action.handIndex, 1);
@@ -294,7 +302,7 @@ export class PazaakGame {
       your_turn: this.current === player && this.phase === Phase.PLAYER_DECISION,
       you: {
         total: me.total,
-        table: me.table.map((c) => [c.label, c.value]),
+        table: me.table.map((c) => [c.label, c.value, c.family] as TableCardTuple),
         hand: me.hand.map((c) => c.code),
         hand_options: me.hand.map((c) => c.options.map((o) => o.label)),
         standing: me.standing,
@@ -303,7 +311,7 @@ export class PazaakGame {
       },
       opponent: {
         total: opp.total,
-        table: opp.table.map((c) => [c.label, c.value]),
+        table: opp.table.map((c) => [c.label, c.value, c.family] as TableCardTuple),
         hand_size: opp.hand.length,
         standing: opp.standing,
         sets_won: opp.setsWon,

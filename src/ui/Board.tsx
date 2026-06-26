@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 import type { Seat } from '../engine';
-import { tableCardArt } from './cardArt';
+import { cardArt, familyForCode } from './cardArt';
 import type { DisplayCard, MatchController } from './controller';
 import { primePazaakSounds } from './sounds';
 import './board.css';
@@ -94,7 +94,7 @@ export function Board({ controller }: { controller: MatchController }) {
               <div key={i} className="pz-hand-slot">
                 <div
                   className={`pz-hand-card ${playable ? 'playable' : ''}`}
-                  style={{ backgroundImage: `url(${tableCardArt(label)})` }}
+                  style={{ backgroundImage: `url(${cardArt(label, familyForCode(code))})` }}
                   onClick={() => play(i)}
                   title={label}
                 >
@@ -159,7 +159,7 @@ export function Board({ controller }: { controller: MatchController }) {
 
 function TableCard({ card }: { card: DisplayCard }) {
   return (
-    <div className="pz-card" style={{ backgroundImage: `url(${tableCardArt(card.label)})` }}>
+    <div className="pz-card" style={{ backgroundImage: `url(${cardArt(card.label, card.family)})` }}>
       <span>{card.label}</span>
     </div>
   );

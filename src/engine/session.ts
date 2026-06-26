@@ -23,6 +23,7 @@ import {
   Phase,
   PlayHandCard,
   Stand,
+  type TableCard,
 } from './engine';
 import type { PazaakEvent, Seat } from './events';
 
@@ -138,14 +139,15 @@ export class MatchSession {
     });
   }
 
-  private tables(): [string[], string[]] {
-    return [this.game.players[0].table.map((c) => c.label), this.game.players[1].table.map((c) => c.label)];
+  /** Independent snapshots of both tables (shallow copies, so before/after diffs hold). */
+  private tables(): [TableCard[], TableCard[]] {
+    return [[...this.game.players[0].table], [...this.game.players[1].table]];
   }
 
   private computeOpeningEvents(): PazaakEvent[] {
     const events: PazaakEvent[] = [];
     this.tables().forEach((table, p) => {
-      for (const label of table) events.push(this.cardEvent(p as Seat, label));
+      for (const card of table) events.push(this.cardEvent(p as Seat, card));
     });
     return events.concat(this.autoAdvance());
   }
@@ -204,21 +206,22 @@ export class MatchSession {
       }
     } else {
       for (const p of [0, 1] as const) {
-        for (const label of after[p].slice(before[p].length)) {
-          events.push(this.cardEvent(p, label));
+        for (const card of after[p].slice(before[p].length)) {
+          events.push(this.cardEvent(p, card));
         }
       }
     }
     return events;
   }
 
-  private cardEvent(player: Seat, label: string): PazaakEvent {
-    const isDraw = /^-?\d+$/.test(label); // main-deck values are bare numbers
+  private cardEvent(player: Seat, card: TableCard): PazaakEvent {
+    const isDraw = card.family === 'main'; // main-deck draws vs. played side cards
     return {
       type: isDraw ? 'draw' : 'play',
       actor: player,
-      card: label,
+      card: card.label,
       total: this.game.players[player].total,
+      family: card.family,
     };
   }
 }

@@ -90,13 +90,22 @@ describe('driving a turn', () => {
     s.game.players[0].playedThisTurn = false;
     const events = peek(s).step(PlayHandCard(0, 0));
     const play = events.find((e) => e.type === 'play');
-    expect(play).toMatchObject({ type: 'play', card: '+3', actor: 0 });
+    expect(play).toMatchObject({ type: 'play', card: '+3', actor: 0, family: 'plus' });
   });
 
-  it('tags main-deck draws as draw, not play', () => {
+  it('carries the family so flip cards can render two-tone art', () => {
+    const s = session();
+    s.game.players[0].hand = [card('±3')];
+    s.game.players[0].playedThisTurn = false;
+    const events = peek(s).step(PlayHandCard(0, 1)); // the "-3" option
+    expect(events.find((e) => e.type === 'play')).toMatchObject({ card: '-3', family: 'flip' });
+  });
+
+  it('tags main-deck draws as draw with the main family', () => {
     const events = session().apply({ type: 'end_turn' }); // seat 1 then auto-draws
     const oppDraw = events.find((e) => e.type === 'draw' && e.actor === 1);
     expect(oppDraw).toBeDefined();
+    expect(oppDraw).toMatchObject({ family: 'main' });
     expect(/^-?\d+$/.test((oppDraw as { card: string }).card)).toBe(true);
   });
 });
@@ -107,8 +116,8 @@ describe('auto-stand and set framing', () => {
   it('auto-stands the active seat sitting on a locked 20', () => {
     const s = session();
     s.game.players[0].table = [
-      { label: '10', value: 10 },
-      { label: '10', value: 10 },
+      { label: '10', value: 10, family: 'main' },
+      { label: '10', value: 10, family: 'main' },
     ]; // seat 0 at 20
     s.game.players[1].standing = true; // seat 1 already done at 0
     s.game.current = 0;
@@ -121,9 +130,9 @@ describe('auto-stand and set framing', () => {
   it('set_over reports the absolute winner seat and reason', () => {
     const s = session();
     s.game.players[0].table = [
-      { label: '10', value: 10 },
-      { label: '10', value: 10 },
-      { label: '5', value: 5 },
+      { label: '10', value: 10, family: 'main' },
+      { label: '10', value: 10, family: 'main' },
+      { label: '5', value: 5, family: 'main' },
     ]; // seat 0 busts on end-turn
     const events = peek(s).step(EndTurn());
     const setOver = events.find((e) => e.type === 'set_over');

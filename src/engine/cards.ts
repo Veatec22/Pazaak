@@ -103,12 +103,22 @@ export function card(code: string): SideCard {
   return c;
 }
 
+/** Card families rendered as gold — "Double" and "Tie-Breaker". Eliminated from this game. */
+const GOLD_FAMILIES = new Set(['double', 'tiebreak']);
+
 /**
- * A legal 10-card side deck sampled (with the duplicates the game allows) from the full
- * collection. Good enough for a default opponent; curated decks can be passed in.
+ * The pool decks are actually built from: the full collection minus the gold cards. The
+ * Double/Tie-Breaker mechanics stay supported in the engine, but no deck ever contains them,
+ * so they never appear in play.
+ */
+export const DECK_COLLECTION: readonly SideCard[] = FULL_COLLECTION.filter((c) => !GOLD_FAMILIES.has(c.family));
+
+/**
+ * A legal 10-card side deck sampled (with the duplicates the game allows) from the playable
+ * collection (no gold cards). Good enough for a default opponent; curated decks can be passed in.
  */
 export function randomSideDeck(rng: Rng): SideCard[] {
-  return Array.from({ length: SIDE_DECK_SIZE }, () => FULL_COLLECTION[rng.randint(0, FULL_COLLECTION.length - 1)]);
+  return Array.from({ length: SIDE_DECK_SIZE }, () => DECK_COLLECTION[rng.randint(0, DECK_COLLECTION.length - 1)]);
 }
 
 /** The shared 1-10 value deck both players draw from, reshuffled when exhausted. */

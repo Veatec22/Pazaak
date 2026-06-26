@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { FULL_COLLECTION, MainDeck, card, randomSideDeck } from './cards';
+import { DECK_COLLECTION, FULL_COLLECTION, MainDeck, card, randomSideDeck } from './cards';
 import { EndTurn, PazaakGame, Phase, PlayHandCard, type Action, type TableCard } from './engine';
 import { SeededRng } from './rng';
 
@@ -16,7 +16,7 @@ const peek = (g: PazaakGame) => g as unknown as Internals;
 const pinMainDeck = (g: PazaakGame, cards: number[]) => {
   (g.mainDeck as unknown as { cards: number[] | null }).cards = cards;
 };
-const tc = (value: number, label = String(value)): TableCard => ({ label, value });
+const tc = (value: number, label = String(value)): TableCard => ({ label, value, family: 'main' });
 
 function game(seed = 0, firstPlayer: number | null = 0): PazaakGame {
   const rng = new SeededRng(seed);
@@ -55,6 +55,22 @@ describe('card model', () => {
     expect(card('D').options[0].double).toBe(true);
     expect(card('T').options.every((o) => o.tiebreak)).toBe(true);
     expect(new Set(card('T').options.map((o) => o.delta))).toEqual(new Set([1, -1]));
+  });
+
+  it('excludes the gold cards (Double / Tie-Breaker) from the deck pool', () => {
+    expect(DECK_COLLECTION).toHaveLength(21); // 23 collectibles minus D and T
+    expect(DECK_COLLECTION.some((c) => c.family === 'double' || c.family === 'tiebreak')).toBe(false);
+    // they still exist in the full model (engine keeps the mechanics), just never in a deck
+    expect(card('D').family).toBe('double');
+  });
+
+  it('never deals a gold card into a random side deck', () => {
+    const rng = new SeededRng(7);
+    for (let i = 0; i < 200; i++) {
+      for (const c of randomSideDeck(rng)) {
+        expect(c.family === 'double' || c.family === 'tiebreak').toBe(false);
+      }
+    }
   });
 
   it('main deck is four of each 1-10 and reshuffles', () => {

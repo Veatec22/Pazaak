@@ -17,13 +17,28 @@ export function iconForCode(code: string): string {
   return n ? `${ICON_BASE}/ii_pazcard_${String(n).padStart(3, '0')}.png` : '';
 }
 
+/** The side-card family implied by a hand card's `code` (e.g. "±3" → flip, "2&4" → dual). */
+export function familyForCode(code: string): string {
+  if (code.startsWith('±')) return 'flip';
+  if (code.includes('&')) return 'dual';
+  if (code === 'D') return 'double';
+  if (code === 'T') return 'tiebreak';
+  return code.startsWith('-') ? 'minus' : 'plus';
+}
+
 /**
- * Face art for a card on the table, chosen from its label the way KotOR does: green for
- * main-deck values, blue for +, red for -, gold for the "double"/tie-breaker cards.
+ * Face art for a card, chosen from its `family` the way KotOR does:
+ *   - main-deck draws → green generic,
+ *   - **flippable cards (flip ± and dual N&M) → the two-tone art** (`pcards_dbl*`), with the
+ *     active side's colour on top — these are the cards you can rotate,
+ *   - plain +/- → solid blue / red.
+ * Gold ("double"/"tie-breaker") art is intentionally unused: those cards are eliminated.
  */
-export function tableCardArt(label: string): string {
-  if (label === 'x2' || label === 'D' || label.endsWith('T')) return `${CARD_BASE}/pcards_gold_p.png`;
-  if (/^\d+$/.test(label)) return `${CARD_BASE}/pcards_generic_p.png`; // main-deck draw
+export function cardArt(label: string, family: string): string {
+  if (family === 'flip' || family === 'dual') {
+    return label.startsWith('-') ? `${CARD_BASE}/pcards_dblneg_p.png` : `${CARD_BASE}/pcards_dblpos_p.png`;
+  }
+  if (family === 'main' || /^\d+$/.test(label)) return `${CARD_BASE}/pcards_generic_p.png`;
   if (label.startsWith('-')) return `${CARD_BASE}/pcards_neg_p.png`;
   return `${CARD_BASE}/pcards_pos_p.png`;
 }

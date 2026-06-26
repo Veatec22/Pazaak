@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 
-import type { PazaakEvent, Seat, SeatState } from '../engine';
+import type { PazaakEvent, Seat, SeatState, TableCardTuple } from '../engine';
 import { type Banner, type Display, type DisplayCard, EMPTY_DISPLAY } from './controller';
 import { playPazaakSound } from './sounds';
 
@@ -14,8 +14,8 @@ let cardSeq = 0;
  * it stands and pick the turn back up.
  */
 function snapshotToDisplay(state: SeatState, mySeat: Seat): Display {
-  const toCards = (cards: [string, number][]): DisplayCard[] =>
-    cards.map(([label]) => ({ key: `c${cardSeq++}`, label }));
+  const toCards = (cards: TableCardTuple[]): DisplayCard[] =>
+    cards.map(([label, , family]) => ({ key: `c${cardSeq++}`, label, family }));
   const other = (1 - mySeat) as Seat;
   const tables: [DisplayCard[], DisplayCard[]] = [[], []];
   tables[mySeat] = toCards(state.you.table);
@@ -46,10 +46,10 @@ export function useReplay(mySeat: Seat | null) {
   const [banner, setBanner] = useState<Banner | null>(null);
   const [finished, setFinished] = useState(false);
 
-  const appendCard = useCallback((actor: Seat, label: string, total: number) => {
+  const appendCard = useCallback((actor: Seat, label: string, total: number, family: string) => {
     setDisplay((d) => {
       const tables: [DisplayCard[], DisplayCard[]] = [d.tables[0], d.tables[1]];
-      tables[actor] = [...tables[actor], { key: `c${cardSeq++}`, label }];
+      tables[actor] = [...tables[actor], { key: `c${cardSeq++}`, label, family }];
       const totals: [number, number] = [d.totals[0], d.totals[1]];
       totals[actor] = total;
       return { ...d, tables, totals };
@@ -67,12 +67,12 @@ export function useReplay(mySeat: Seat | null) {
       for (const ev of events) {
         switch (ev.type) {
           case 'draw':
-            appendCard(ev.actor, ev.card, ev.total);
+            appendCard(ev.actor, ev.card, ev.total, ev.family);
             playPazaakSound(ev.total > 20 ? 'warnbust' : 'drawmain');
             await sleep(420);
             break;
           case 'play':
-            appendCard(ev.actor, ev.card, ev.total);
+            appendCard(ev.actor, ev.card, ev.total, ev.family);
             playPazaakSound('playside');
             await sleep(420);
             break;
