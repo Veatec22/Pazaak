@@ -4,6 +4,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
+  base: '/Pazaak/',
   plugins: [
     react(),
     VitePWA({
@@ -21,7 +22,7 @@ export default defineConfig({
         background_color: '#0a1310',
         display: 'standalone',
         orientation: 'any',
-        icons: [{ src: '/icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any maskable' }],
+        icons: [{ src: 'icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any maskable' }],
       },
     }),
   ],
