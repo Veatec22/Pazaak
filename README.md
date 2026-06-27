@@ -1,88 +1,91 @@
-# Pazaak 1v1
+<p align="center">
+  <img src="public/brand/icon-192.png" height="80" alt="Pazaak Icon" style="vertical-align: middle; margin-right: 15px;" />
+  <img src="public/brand/logo.png" height="80" alt="Pazaak Logo" style="vertical-align: middle;" />
+</p>
 
-Play [pazaak](https://en.wikipedia.org/wiki/Pazaak) (the KotOR card game) against a friend
-in the browser, with the same art, sound and feel as the HK-47 single-player version. No
-backend, no database — the room is a share link and the match runs peer-to-peer.
 
-See [docs/2026-06-24-pazaak-1v1-multiplayer.md](docs/2026-06-24-pazaak-1v1-multiplayer.md)
-for the full plan and design decisions.
+A modern, responsive, and serverless web adaptation of the classic **Pazaak** card game from Star Wars franchise. Play against different AI difficulties in Single Player (Quick Match or Campaign) or challenge your friends in Peer-to-Peer Multiplayer.
 
-## Status
+No backend, no database, no registration — matches run directly in your browser.
 
-| Phase | What | State |
-| --- | --- | --- |
-| 1 | TS engine port + parity tests (locks the event/state contract) | ✅ done |
-| 2 | Local hot-seat (pass & play), own responsive UI, KotOR art + sound | ✅ done |
-| 3 | Trystero P2P — rooms from a link, host-authoritative protocol, PWA/mobile | ✅ done |
-| 4 | Reconnect/disconnect UX (resync from snapshot), turn/connection polish | ✅ done |
-| 5 | Deck builder (optional; default decks for now) | ⬜ next |
+---
 
-### Reconnect / disconnect
+## 🌟 Features
 
-If a peer drops, the other side shows a blocking overlay ("Friend disconnected — waiting…")
-while keeping the board on screen; a connection dot in the header tracks the link state
-(amber connecting / green connected / red dropped). When the peer returns, the host re-sends
-a `resume` snapshot and the guest **rebuilds the whole board from that snapshot** (tables,
-totals, standing, score) without replaying the lost event stream, then play continues.
+*   **🎮 Single Player Modes:**
+    *   **Campaign:** Climb the AI deck ladder across 4 tiers of difficulty (Easy, Normal, Hard, Hardcore).
+    *   **Quick Match:** Face a random-tier bot using a classic, flip, or mixed card pool.
+*   **👥 Local Multiplayer (Pass & Play):** Play locally with a friend on a single device.
+*   **🌐 Online P2P Multiplayer:**
+    *   Hosted purely over WebRTC via Trystero using public torrent trackers for signaling.
+    *   No server setup required: simply share your room link or code to connect instantly.
+    *   Robust reconnect mechanics: if a connection drops, guest automatically resynchronizes to the host's match state.
+*   **🎵 Nostalgic Audiovisuals:**
+    *   Original card designs and high-fidelity graphics.
+    *   Classic KotOR UI click sounds, card dealing effects, and cantina playlist.
+*   **📱 Responsive & PWA Ready:** Beautifully optimized layout for both desktop and mobile browsers, installable as a progressive web app.
+*   **🌍 Multi-language Support:** Full localization in both **English** and **Polish**.
 
-Caveat: rediscovery speed is bounded by the WebTorrent tracker announce interval, so a
-refreshed peer can take up to ~a minute to rejoin. (A relay strategy reconnects faster but
-was less reliable here — see Transport above.)
+---
 
-## Playing online
+## 🎲 Game Rules Overview
 
-1. Open the app → **Play a friend** → you become the **host** and get a `#room=<id>` link.
-2. Send the link to a friend (Copy / native Share on mobile). They open it → **guest**.
-3. Peers connect directly (WebRTC); the match starts automatically. **Pass & play** runs
-   two players on one device with no network.
+Pazaak is a black-jack style card game where the goal is to win 3 sets.
+1.  **Objective:** Get your card total as close to **20** as possible without exceeding it (busting).
+2.  **Gameplay:** Draw cards automatically from the main deck on your turn. You can choose to play one of your 4 side cards to adjust your score.
+3.  **Actions:** Choose to **End Turn** (wait for the next card) or **Stand** (freeze your score and wait for your opponent).
+4.  **Victory:** The player with the highest total score $\le 20$ wins the set. A tie results in a draw.
 
-To test it yourself: open the host, then open the invite link in a second window
-(incognito / another browser works too — each tab is its own peer).
+---
 
-### Transport
+## 🛠️ Architecture & Tech Stack
 
-Signalling rides Trystero's **torrent** strategy (public WebTorrent trackers) — chosen after
-the Nostr default rate-limited/timed out and MQTT brokers connected but didn't relay the
-handshake reliably. Trackers only carry the WebRTC offer/answer; the game runs over the
-direct peer-to-peer data channel. **No owned backend, no database, no managed service.** The
-strategy is a one-line swap in [`src/net/protocol.ts`](src/net/protocol.ts) if a network
-needs a different one. (Honest caveat: pure P2P can fail behind strict/symmetric NAT without
-a TURN relay; for a handful of friends, STUN-only usually works.)
+This project is built client-side with **React**, **TypeScript**, **Vite**, and **Trystero**:
 
-## Architecture
+*   **`src/engine/`**: A faithful TypeScript implementation of the original Pazaak rules, session states, and card pools. It is transport- and UI-agnostic.
+*   **`src/net/`**: Handles signaling and authoritative P2P communication powered by **Trystero** (WebRTC). The host runs the game state engine and broadcasts event streams and snapshots to the guest.
+*   **`src/ui/`**: A responsive, touch-friendly UI board. Extends the original assets with modern styling, sounds, and dialog controllers.
+*   **`src/music/`**: Integrates HTML5 Audio to stream, loop, and control the classic cantina music tracks.
 
-The game logic lives **entirely client-side** in `src/engine` — a faithful TypeScript port
-of the Python `PazaakGame` / `PazaakSession` from the HK-47 repo. It is frontend- and
-transport-agnostic:
+---
 
-- `cards.ts` — the authentic 23 KotOR II side cards + the shared 1-10 main deck.
-- `engine.ts` — `PazaakGame`, the pure rules state machine (`legalActions` / `apply`).
-- `session.ts` — `MatchSession`, which wraps the engine and emits an ordered, **player-
-  neutral event stream** (`draw` / `play` / `stand` / `end_turn` / `set_over` /
-  `match_over`) plus a per-seat `viewFor` snapshot that hides the opponent's hand.
+## 🚀 Development & Setup
 
-This event stream is the contract that both the local board and the networked peers replay
-to animate. For 1v1 the **host** holds the single engine instance; the guest sends actions
-over the P2P channel and renders the broadcast events — RNG only ever lives on the host.
+Make sure you have [Bun](https://bun.sh/) installed.
 
-- `src/net` — `protocol.ts` (Trystero room + typed `sync`/`act` channels) and
-  `useOnlineMatch.ts` (host-authoritative controller: host owns the `MatchSession`,
-  broadcasts events + the guest's per-seat snapshot; guest is a thin renderer).
-- `src/ui` — the (deliberately replaceable) board. `Board.tsx` renders any
-  `MatchController`; `useMatch.ts` is the hot-seat driver, `replay.ts` the shared
-  event-stream player, `cardArt.ts` / `sounds.ts` reuse the KotOR assets in
-  `public/pazaak/`. `App.tsx` routes lobby ↔ hot-seat ↔ online off the URL hash.
-
-The board is intentionally our own UI (not the fixed 800×600 KotOR panel) so it stays
-responsive/PWA-friendly; only the **card art** is reused. `reference/` holds the original
-HK-47 board component and the `.gui` layouts for reference only (excluded from build/lint).
-
-## Develop
-
-```sh
+### Install dependencies
+```bash
 bun install
-bun run dev      # http://127.0.0.1:7443  (or: make dev)
-bun test         # 73 engine + session parity tests
-bun run build    # tsc -b && vite build
+```
+
+### Run local development server
+```bash
+bun run dev
+```
+Open [http://127.0.0.1:7443](http://127.0.0.1:7443) in your browser.
+
+### Run tests
+The test suite contains 70+ parity tests verifying the rules engine and game session states:
+```bash
+bun test
+```
+
+### Build for production
+```bash
+bun run build
+```
+
+### Lint code
+```bash
 bun run lint
 ```
+
+---
+
+## ⚖️ Disclaimer & Legal Notice
+
+This is a non-profit, fan-made passion project created solely for educational and entertainment purposes. 
+
+*   **No Affiliation:** This project is not affiliated with, authorized, endorsed by, or in any way officially connected with Disney, Lucasfilm Ltd., BioWare, Obsidian Entertainment, Electronic Arts, or any of their affiliates or subsidiaries.
+*   **Ownership:** *Star Wars*, *Knights of the Old Republic*, *Pazaak*, and all associated logos, designs, card art, sounds, and names are trademarks and/or registered copyrights of Lucasfilm Ltd. and their respective intellectual property owners.
+*   **Fair Use:** All assets reused from the original game are utilized under fair use guidelines for non-commercial fan creations. If you are an intellectual property owner and wish for assets to be removed, please open an issue.

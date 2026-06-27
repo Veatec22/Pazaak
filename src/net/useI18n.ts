@@ -134,6 +134,11 @@ export const translations = {
     help_li4: 'The player with the highest score \u2264 20 wins the set.',
     help_li5: 'If you go over 20 (bust), you immediately lose the set (unless a side card brings you back down).',
     help_li6: 'A tie results in a draw (no points).',
+    tab_rules: 'Rules',
+    tab_about: 'About',
+    about_p1: 'This is a non-profit, fan-made passion project created to bring the classic card game Pazaak from Star Wars: Knights of the Old Republic into the modern web browser. It features serverless, peer-to-peer multiplayer and local hot-seat modes.',
+    about_legal_title: 'Legal Notice',
+    about_legal: 'All trademarks, copyrighted assets, designs, sounds, and names (including Star Wars, Pazaak, and KotOR) belong to Lucasfilm Ltd., Disney, BioWare, Obsidian Entertainment, or their respective owners. Reused game assets are used for non-commercial fan appreciation under fair use.',
   },
   pl: {
     single_player: 'Gra jednoosobowa',
@@ -246,6 +251,11 @@ export const translations = {
     help_li4: 'Gracz z najwyższym wynikiem \u2264 20 wygrywa zestaw.',
     help_li5: 'Jeśli przekroczysz 20 (fura), natychmiast przegrywasz zestaw (chyba że karta boczna zbije wynik z powrotem poniżej 20).',
     help_li6: 'Remis oznacza powtórzenie zestawu (nikt nie dostaje punktu).',
+    tab_rules: 'Zasady',
+    tab_about: 'O grze',
+    about_p1: 'To niekomercyjny, fanowski projekt stworzony z pasji, aby przenieść klasyczną grę karcianą Pazaak ze Star Wars: Knights of the Old Republic do nowoczesnej przeglądarki internetowej. Zawiera tryb wieloosobowy peer-to-peer bez serwera oraz lokalną grę "graj i przekaż".',
+    about_legal_title: 'Nota prawna',
+    about_legal: 'Wszystkie znaki towarowe, materiały chronione prawem autorskim, projekty, dźwięki i nazwy (w tym Star Wars, Pazaak oraz KotOR) należą do Lucasfilm Ltd., Disney, BioWare, Obsidian Entertainment lub ich odpowiednich właścicieli. Ponownie wykorzystane zasoby gry są używane w celach niekomercyjnych w ramach dozwolonego użytku (fair use).',
   },
 };
 
@@ -262,8 +272,8 @@ export function useI18n() {
 
   const t = useCallback(
     (key: string, params?: Record<string, string | number>) => {
-      const dict = translations[lang] || translations.en;
-      let str = (dict as any)[key] || (translations.en as any)[key] || key;
+      const dict = (translations[lang] || translations.en) as Record<string, string>;
+      let str = dict[key] || (translations.en as Record<string, string>)[key] || key;
       if (params) {
         Object.entries(params).forEach(([k, v]) => {
           str = str.replace(`{${k}}`, String(v));
