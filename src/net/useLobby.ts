@@ -13,7 +13,7 @@ export function getRandomNickname(): string {
 export function getSavedNickname(): string {
   if (typeof window === 'undefined') return 'HK-47';
   let name = localStorage.getItem(NICKNAME_KEY);
-  if (!name) {
+  if (!name || !name.trim()) {
     name = getRandomNickname();
     localStorage.setItem(NICKNAME_KEY, name);
   }
@@ -24,9 +24,9 @@ export function useNickname() {
   const [nickname, setNicknameState] = useState(getSavedNickname);
 
   const setNickname = useCallback((name: string) => {
-    const trimmed = name.trim().slice(0, 20) || 'Player';
-    localStorage.setItem(NICKNAME_KEY, trimmed);
-    setNicknameState(trimmed);
+    const val = name.slice(0, 20);
+    localStorage.setItem(NICKNAME_KEY, val);
+    setNicknameState(val);
   }, []);
 
   return [nickname, setNickname] as const;

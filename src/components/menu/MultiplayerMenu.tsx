@@ -45,6 +45,11 @@ export function MultiplayerMenu({
             type="text"
             value={nickname}
             onChange={(e) => setNickname(e.target.value)}
+            onBlur={() => {
+              if (!nickname.trim()) {
+                setNickname(getRandomNickname());
+              }
+            }}
             maxLength={20}
             placeholder={t('placeholder_nickname')}
           />
