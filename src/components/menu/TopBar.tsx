@@ -115,7 +115,7 @@ export function TopBar({ hasLeaveButton = false }: { hasLeaveButton?: boolean })
 
         {installPrompt ? (
           <Tooltip content={t('install_app')}>
-            <button className="pz-topbar-btn pz-install-btn" onClick={install} aria-label={t('install_app')}>
+            <button className="pz-topbar-btn pz-install-btn primary" onClick={install} aria-label={t('install_app')}>
               <Download size={20} strokeWidth={3} />
             </button>
           </Tooltip>

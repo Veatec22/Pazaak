@@ -401,6 +401,12 @@
   .pz-root {
     padding: 8px 24px 16px;
   }
+  .pz-root .pz-top-bar {
+    margin-left: -24px;
+    margin-right: -24px;
+    width: calc(100% + 48px);
+    margin-top: -8px;
+  }
   .pz-header {
     padding: 12px 16px 8px;
   }

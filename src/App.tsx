@@ -6,10 +6,11 @@ import { CampaignScreen } from './components/singleplayer/CampaignScreen';
 import { QuickGame } from './components/singleplayer/QuickGame';
 import { QuickMatchSetup } from './components/singleplayer/QuickMatchSetup';
 import type { CardPool, Difficulty } from './engine';
-import { MainMenu, MultiplayerMenu, ShareBar, SinglePlayerMenu, WaitingRoom } from './Lobby';
+import { MainMenu, MultiplayerMenu, SinglePlayerMenu, WaitingRoom } from './Lobby';
 import { MusicProvider } from './music/MusicProvider';
 import { getSavedNickname, useLobbyAnnouncer } from './net/useLobby';
 import { useOnlineMatch } from './net/useOnlineMatch';
+import { useI18n } from './net/useI18n';
 import { Board } from './ui/Board';
 import { installClickSound } from './ui/uiSounds';
 import { useMatch } from './ui/useMatch';
@@ -60,12 +61,68 @@ const go = (hash: string) => () => {
 
 export default function App() {
   const [route, setRoute] = useState<Route>(parseRoute);
+  const { t } = useI18n();
+  const [programmaticTransition, setProgrammaticTransition] = useState(false);
+
+  const handleLeave = useCallback((targetHash: string) => {
+    setProgrammaticTransition(true);
+    const hash = targetHash.startsWith('#') ? targetHash : (targetHash ? `#${targetHash}` : '#');
+    window.location.replace(window.location.pathname + window.location.search + hash);
+  }, []);
 
   useEffect(() => {
-    const onHash = () => setRoute(parseRoute());
+    const onHash = (e: HashChangeEvent) => {
+      const currentMode = route.mode;
+      const isGame = currentMode === 'quick-game' || currentMode === 'campaign-game' || currentMode === 'online' || currentMode === 'hotseat';
+      
+      const newRoute = parseRoute();
+      const isNewGame = newRoute.mode === 'quick-game' || newRoute.mode === 'campaign-game' || newRoute.mode === 'online' || newRoute.mode === 'hotseat';
+
+      if (isGame && !isNewGame && !programmaticTransition) {
+        // Intercept browser back button / swipe back from active game
+        // Revert the hash change to stay in game
+        const oldHash = new URL(e.oldURL).hash;
+        location.hash = oldHash;
+        
+        // Trigger forfeit modal in Board.tsx
+        window.dispatchEvent(new CustomEvent('pz-trigger-forfeit'));
+      } else {
+        // Normal transition
+        setProgrammaticTransition(false);
+        setRoute(newRoute);
+      }
+    };
+
     window.addEventListener('hashchange', onHash);
     return () => window.removeEventListener('hashchange', onHash);
-  }, []);
+  }, [route, programmaticTransition]);
+
+  useEffect(() => {
+    // Push dummy state to enable popstate interception on home page
+    if (route.mode === 'main-menu') {
+      if (location.hash === '' || location.hash === '#') {
+        history.replaceState({ root: true }, '');
+        history.pushState(null, '');
+      }
+    }
+  }, [route.mode]);
+
+  useEffect(() => {
+    const onPopState = () => {
+      if (route.mode === 'main-menu') {
+        const confirmExit = window.confirm(t('confirm_exit'));
+        if (confirmExit) {
+          // Let them go back (exit the app)
+          history.back();
+        } else {
+          // Push dummy state again to stay
+          history.pushState(null, '');
+        }
+      }
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, [route.mode, t]);
 
   useEffect(() => installClickSound(), []); // KotOR click cue on every button press
 
@@ -88,17 +145,17 @@ export default function App() {
   } else if (route.mode === 'quick-setup') {
     content = <QuickMatchSetup onPick={(pool) => (location.hash = `quick=${pool}`)} onLeave={go('singleplayer')} />;
   } else if (route.mode === 'quick-game') {
-    content = <QuickGame pool={route.pool} onLeave={go('singleplayer')} />;
+    content = <QuickGame pool={route.pool} onLeave={() => handleLeave('singleplayer')} />;
   } else if (route.mode === 'campaign') {
     content = <CampaignScreen onPick={(d) => (location.hash = `campaign=${d}`)} onLeave={go('singleplayer')} />;
   } else if (route.mode === 'campaign-game') {
-    content = <CampaignGame difficulty={route.difficulty} onLeave={go('campaign')} />;
+    content = <CampaignGame difficulty={route.difficulty} onLeave={() => handleLeave('campaign')} />;
   } else if (route.mode === 'multi-menu') {
     content = <MultiplayerMenu onPlayFriend={playFriend} onHotSeat={go('hotseat')} onLeave={leave} />;
   } else if (route.mode === 'hotseat') {
-    content = <HotSeatGame onLeave={leave} />;
+    content = <HotSeatGame onLeave={() => handleLeave('multiplayer')} />;
   } else {
-    content = <OnlineGame roomId={route.roomId} isHost={route.isHost} onLeave={leave} />;
+    content = <OnlineGame roomId={route.roomId} isHost={route.isHost} onLeave={() => handleLeave('multiplayer')} />;
   }
 
   // MusicProvider owns the persistent <audio>, so the cantina music keeps playing across
@@ -121,18 +178,12 @@ function OnlineGame({ roomId, isHost, onLeave }: { roomId: string; isHost: boole
 
   useLobbyAnnouncer(roomId, nickname, isHost && controller.connection === 'connecting');
 
-  if (isHost && controller.connection === 'connecting') {
-    return (
-      <>
-        <WaitingRoom roomId={roomId} onLeave={onLeave} />
-      </>
-    );
-  }
-
   return (
     <>
-      {isHost ? <ShareBar roomId={roomId} /> : null}
-      <Board controller={controller} onForfeit={onLeave} />
+      <Board controller={controller} onForfeit={onLeave} roomId={roomId} isHost={isHost} />
+      {isHost && controller.connection === 'connecting' ? (
+        <WaitingRoom roomId={roomId} onLeave={onLeave} />
+      ) : null}
     </>
   );
 }

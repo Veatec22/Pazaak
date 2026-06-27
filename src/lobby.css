@@ -662,6 +662,19 @@
   transform: translateY(1px);
 }
 
+.pz-topbar-btn.primary {
+  background: rgba(26, 178, 140, 0.25);
+  border-color: rgba(109, 243, 207, 0.5);
+  color: var(--text-bright);
+  box-shadow: 0 0 12px rgba(26, 178, 140, 0.35);
+}
+.pz-topbar-btn.primary:hover {
+  background: #1ab28c;
+  border-color: #6df3cf;
+  color: #050d0a;
+  box-shadow: 0 0 15px rgba(26, 178, 140, 0.55);
+}
+
 
 .pz-help-modal {
   width: min(550px, 94vw);
