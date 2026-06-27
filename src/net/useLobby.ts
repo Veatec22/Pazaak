@@ -54,7 +54,7 @@ export function useLobby(active: boolean) {
 
     setConnecting(true);
     const room = createRoom(LOBBY_ROOM_ID);
-    const [_, getAnnounce] = room.makeAction('announce') as unknown as [unknown, (cb: (m: LobbyAnnounceMessage, peerId: string) => void) => void];
+    const [ , getAnnounce] = room.makeAction('announce') as unknown as [unknown, (cb: (m: LobbyAnnounceMessage, peerId: string) => void) => void];
 
 
     getAnnounce((data, peerId) => {

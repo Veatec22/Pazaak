@@ -136,9 +136,11 @@ export const translations = {
     help_li6: 'A tie results in a draw (no points).',
     tab_rules: 'Rules',
     tab_about: 'About',
+    tab_license: 'License',
     about_p1: 'This is a non-profit, fan-made passion project created to bring the classic card game Pazaak from Star Wars: Knights of the Old Republic into the modern web browser. It features serverless, peer-to-peer multiplayer and local hot-seat modes.',
     about_legal_title: 'Legal Notice',
     about_legal: 'All trademarks, copyrighted assets, designs, sounds, and names (including Star Wars, Pazaak, and KotOR) belong to Lucasfilm Ltd., Disney, BioWare, Obsidian Entertainment, or their respective owners. Reused game assets are used for non-commercial fan appreciation under fair use.',
+    license_intro: 'The software code of this project is licensed under the MIT License:',
   },
   pl: {
     single_player: 'Gra jednoosobowa',
@@ -253,9 +255,11 @@ export const translations = {
     help_li6: 'Remis oznacza powtórzenie zestawu (nikt nie dostaje punktu).',
     tab_rules: 'Zasady',
     tab_about: 'O grze',
+    tab_license: 'Licencja',
     about_p1: 'To niekomercyjny, fanowski projekt stworzony z pasji, aby przenieść klasyczną grę karcianą Pazaak ze Star Wars: Knights of the Old Republic do nowoczesnej przeglądarki internetowej. Zawiera tryb wieloosobowy peer-to-peer bez serwera oraz lokalną grę "graj i przekaż".',
     about_legal_title: 'Nota prawna',
     about_legal: 'Wszystkie znaki towarowe, materiały chronione prawem autorskim, projekty, dźwięki i nazwy (w tym Star Wars, Pazaak oraz KotOR) należą do Lucasfilm Ltd., Disney, BioWare, Obsidian Entertainment lub ich odpowiednich właścicieli. Ponownie wykorzystane zasoby gry są używane w celach niekomercyjnych w ramach dozwolonego użytku (fair use).',
+    license_intro: 'Kod źródłowy tego projektu jest udostępniany na licencji MIT:',
   },
 };
 

@@ -87,7 +87,7 @@ export function primePazaakSounds(): void {
           const response = await fetch(SOURCES[name]);
           buffers.set(name, await context!.decodeAudioData(await response.arrayBuffer()));
         } catch {
-
+          // ignore failed sound loads
         }
       }),
     );
