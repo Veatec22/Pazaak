@@ -5,12 +5,11 @@ import { useCampaign } from '../../campaign/useCampaign';
 import { useI18n } from '../../net/useI18n';
 import { Board } from '../../ui/Board';
 import { useSinglePlayerMatch } from '../../ui/useSinglePlayerMatch';
-import { LeaveButton } from '../menu/LeaveButton';
+
 import { MenuScreen } from '../menu/MenuScreen';
 
 const clampTier = (t: number) => Math.min(Math.max(t, 0), CAMPAIGN_LENGTH - 1);
 
-/** A campaign run: climb the AI deck ladder for the chosen difficulty. */
 export function CampaignGame({ difficulty, onLeave }: { difficulty: Difficulty; onLeave: () => void }) {
   const campaign = useCampaign(difficulty);
   const [tier, setTier] = useState(() => clampTier(campaign.tier));
@@ -98,9 +97,8 @@ function CampaignMatch({
 
   return (
     <>
-      <LeaveButton onLeave={onLeave} />
       <div className="pz-sp-tier">{t('campaign_opponent', { tier: tier + 1, total })}</div>
-      <Board controller={{ ...controller, endSlot }} />
+      <Board controller={{ ...controller, endSlot }} onForfeit={onLeave} />
     </>
   );
 }
@@ -117,7 +115,7 @@ function CampaignComplete({
   const { t } = useI18n();
   return (
     <MenuScreen variant="pz-campaign-complete" onBack={onLeave} backLabel={t('btn_menu')}>
-      <div className="pz-logo-container">
+      <div className="pz-icon-container">
         <h1>{t('campaign_complete_title')}</h1>
       </div>
       <p className="pz-tag">{t('campaign_complete_msg', { difficulty: t(`difficulty_${difficulty}`) })}</p>

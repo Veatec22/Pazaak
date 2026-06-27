@@ -2,6 +2,7 @@ import { Music, Pause, Play, Repeat, Repeat1, SkipBack, SkipForward, Volume2, Vo
 import { useState } from 'react';
 
 import { useMusic } from './MusicProvider';
+import { Tooltip } from '../components/menu/Tooltip';
 import './music.css';
 
 function fmt(t: number): string {
@@ -11,7 +12,6 @@ function fmt(t: number): string {
   return `${m}:${String(s).padStart(2, '0')}`;
 }
 
-/** TopBar music control: a round button that opens a dropdown player panel. */
 export function MusicControls() {
   const m = useMusic();
   const [open, setOpen] = useState(false);
@@ -21,15 +21,16 @@ export function MusicControls() {
   return (
     <div className="pz-music-container">
       {open ? <div className="pz-dropdown-backdrop" onClick={() => setOpen(false)} /> : null}
-      <button
-        className={`pz-topbar-btn ${open ? 'active' : ''}`}
-        onClick={() => setOpen((o) => !o)}
-        title="Cantina music"
-        aria-label="Cantina music"
-      >
-        <Music size={20} />
-        {m.playing && !m.muted ? <span className="pz-music-dot" aria-hidden /> : null}
-      </button>
+      <Tooltip content="Cantina music">
+        <button
+          className={`pz-topbar-btn ${open ? 'active' : ''}`}
+          onClick={() => setOpen((o) => !o)}
+          aria-label="Cantina music"
+        >
+          <Music size={20} strokeWidth={3} />
+          {m.playing && !m.muted ? <span className="pz-music-dot" aria-hidden /> : null}
+        </button>
+      </Tooltip>
 
       {open ? (
         <div className="pz-music-dropdown">

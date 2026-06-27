@@ -1,4 +1,4 @@
-import { Dices, Key, Plus, Search, Users, X } from 'lucide-react';
+import { ArrowLeft, Dices, Gamepad2, Key, Plus, Search, Users, X } from 'lucide-react';
 import { useState } from 'react';
 
 import { useI18n } from '../../net/useI18n';
@@ -8,7 +8,15 @@ import { MenuScreen } from './MenuScreen';
 
 type Tab = 'none' | 'join' | 'search';
 
-export function MultiplayerMenu({ onPlayFriend, onLeave }: { onPlayFriend: () => void; onLeave: () => void }) {
+export function MultiplayerMenu({
+  onPlayFriend,
+  onHotSeat,
+  onLeave,
+}: {
+  onPlayFriend: () => void;
+  onHotSeat: () => void;
+  onLeave: () => void;
+}) {
   const { t } = useI18n();
   const [nickname, setNickname] = useNickname();
   const [activeTab, setActiveTab] = useState<Tab>('none');
@@ -52,8 +60,8 @@ export function MultiplayerMenu({ onPlayFriend, onLeave }: { onPlayFriend: () =>
       </div>
 
       <div className="pz-lobby-actions">
-        <MenuButton icon={Plus} title={t('create_match')} desc={t('create_match_desc')} primary onClick={onPlayFriend} />
-        <MenuButton icon={Key} title={t('join_via_code')} desc={t('join_via_code_desc')} active={activeTab === 'join'} onClick={() => toggle('join')} />
+        <MenuButton icon={Plus} title={t('create_match')} primary onClick={onPlayFriend} />
+        <MenuButton icon={Key} title={t('join_via_code')} primary active={activeTab === 'join'} onClick={() => toggle('join')} />
 
         {activeTab === 'join' ? (
           <div className="pz-modal-overlay" onClick={() => setActiveTab('none')}>
@@ -83,7 +91,7 @@ export function MultiplayerMenu({ onPlayFriend, onLeave }: { onPlayFriend: () =>
           </div>
         ) : null}
 
-        <MenuButton icon={Search} title={t('browse_matches')} desc={t('browse_matches_desc')} active={activeTab === 'search'} onClick={() => toggle('search')} />
+        <MenuButton icon={Search} title={t('browse_matches')} primary active={activeTab === 'search'} onClick={() => toggle('search')} />
 
         {activeTab === 'search' ? (
           <div className="pz-modal-overlay" onClick={() => setActiveTab('none')}>
@@ -123,6 +131,8 @@ export function MultiplayerMenu({ onPlayFriend, onLeave }: { onPlayFriend: () =>
             </div>
           </div>
         ) : null}
+        <MenuButton icon={Gamepad2} title={t('pass_and_play')} primary onClick={onHotSeat} />
+        <MenuButton icon={ArrowLeft} title={t('btn_back')} onClick={onLeave} />
       </div>
     </MenuScreen>
   );

@@ -55,9 +55,5 @@ export interface MatchController {
 
   reset?: () => void;
 
-  /**
-   * Custom call-to-action(s) for the match-over banner, replacing the default "Play again".
-   * Lets the single-player wrappers inject Next / Retry / Menu buttons.
-   */
-  endSlot?: ReactNode;
+    endSlot?: ReactNode;
 }

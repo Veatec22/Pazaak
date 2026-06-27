@@ -1,17 +1,3 @@
-/**
- * Campaign progress + persistence. One save slot per difficulty (so starting a hardcore run
- * never wipes an easy run), kept in localStorage. The reducer is pure for easy testing; the
- * storage wrappers are thin.
- *
- *  - `tier` = the next match to play, 0..CAMPAIGN_LENGTH. `tier === CAMPAIGN_LENGTH` means the
- *    run is complete (all opponents beaten).
- *  - `everCompleted` = sticky "beat this difficulty at least once" badge — survives a restart
- *    and a hardcore wipe.
- *
- * Result handling: a win advances a tier (and sets the badge on the final win); a loss on
- * **hardcore** resets the run to tier 0 (badge preserved), any other loss leaves progress
- * untouched (retry the same opponent).
- */
 
 import { CAMPAIGN_LENGTH, type Difficulty } from '../engine';
 
@@ -24,7 +10,6 @@ export const FRESH: CampaignProgress = { tier: 0, everCompleted: false };
 
 export const isComplete = (p: CampaignProgress): boolean => p.tier >= CAMPAIGN_LENGTH;
 
-/** Pure reducer: fold a match result into progress. */
 export function applyResult(progress: CampaignProgress, won: boolean, difficulty: Difficulty): CampaignProgress {
   if (won) {
     const tier = Math.min(progress.tier + 1, CAMPAIGN_LENGTH);
@@ -36,7 +21,6 @@ export function applyResult(progress: CampaignProgress, won: boolean, difficulty
   return progress; // ordinary loss: retry the same opponent, no progress lost
 }
 
-/** Restart a run from the beginning, keeping the completion badge. */
 export const restarted = (progress: CampaignProgress): CampaignProgress => ({ tier: 0, everCompleted: progress.everCompleted });
 
 // -- storage -----------------------------------------------------------------

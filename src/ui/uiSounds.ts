@@ -1,8 +1,5 @@
-/**
- * The characteristic KotOR UI click (extracted `gui_click`), played through the Web Audio
- * API on button presses. Primed on the first user gesture (autoplay policy); a no-op where
- * Web Audio is unavailable (e.g. jsdom in tests).
- */
+
+import { isSfxMuted } from './sounds';
 
 const SRC = `${import.meta.env.BASE_URL}sounds/click.wav`;
 const VOLUME = 0.35;
@@ -44,7 +41,7 @@ export function primeUiSounds(): void {
 }
 
 export function playClick(): void {
-  if (!enabled || !context || !buffer) return;
+  if (isSfxMuted() || !enabled || !context || !buffer) return;
   const source = context.createBufferSource();
   source.buffer = buffer;
   const gain = context.createGain();
@@ -53,10 +50,6 @@ export function playClick(): void {
   source.start();
 }
 
-/**
- * Wire a global, delegated click cue: any press on a button / link / role=button plays the
- * KotOR click. Returns a cleanup fn. Opt out on an element with `data-no-click-sound`.
- */
 export function installClickSound(): () => void {
   if (typeof window === 'undefined') return () => {};
   const prime = () => primeUiSounds();

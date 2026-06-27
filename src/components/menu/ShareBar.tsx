@@ -3,7 +3,6 @@ import { useState } from 'react';
 
 import { useI18n } from '../../net/useI18n';
 
-/** Slim in-game invite bar shown to the host while a match is live. */
 export function ShareBar({ roomId }: { roomId: string }) {
   const { t } = useI18n();
   const url = `${location.origin}${location.pathname}#room=${roomId}`;

@@ -1,10 +1,12 @@
-import { Download, HelpCircle, Languages } from 'lucide-react';
+import { Download, HelpCircle, Languages, Volume2, VolumeX } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { MusicControls } from '../../music/MusicControls';
 import { useI18n } from '../../net/useI18n';
+import { useSfxMute } from '../../ui/sounds';
 import { GithubIcon } from './GithubIcon';
 import { HelpModal } from './HelpModal';
+import { Tooltip } from './Tooltip';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => void;
@@ -22,10 +24,12 @@ function githubRepoUrl(): string {
   return 'https://github.com/Veatec22/Pazaak';
 }
 
-/** The persistent top-right bar: music, language, install (PWA), help, GitHub. */
-export function TopBar() {
+const ICON = `${import.meta.env.BASE_URL}brand/icon-192.png`;
+
+export function TopBar({ hasLeaveButton = false }: { hasLeaveButton?: boolean }) {
   const { lang, setLanguage, t } = useI18n();
   const [showHelp, setShowHelp] = useState(false);
+  const { muted: sfxMuted, toggle: toggleSfx } = useSfxMute();
   const [showLangDropdown, setShowLangDropdown] = useState(false);
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
 
@@ -55,17 +59,34 @@ export function TopBar() {
       {showLangDropdown ? <div className="pz-dropdown-backdrop" onClick={() => setShowLangDropdown(false)} /> : null}
 
       <div className="pz-top-bar">
+        <img
+          src={ICON}
+          alt="Pazaak"
+          className={`pz-topbar-icon ${hasLeaveButton ? 'has-leave' : ''}`}
+        />
         <MusicControls />
 
-        <div className="pz-lang-container">
+        <Tooltip content={sfxMuted ? t('sfx_unmute') : t('sfx_mute')}>
           <button
-            className={`pz-topbar-btn ${showLangDropdown ? 'active' : ''}`}
-            onClick={() => setShowLangDropdown((v) => !v)}
-            title="Change Language / Zmień Język"
-            aria-label="Change Language"
+            className="pz-topbar-btn"
+            onClick={toggleSfx}
+            aria-label="Toggle SFX"
+            data-no-click-sound
           >
-            <Languages size={20} />
+            {sfxMuted ? <VolumeX size={20} strokeWidth={3} /> : <Volume2 size={20} strokeWidth={3} />}
           </button>
+        </Tooltip>
+
+        <div className="pz-lang-container">
+          <Tooltip content="Change Language / Zmień Język">
+            <button
+              className={`pz-topbar-btn ${showLangDropdown ? 'active' : ''}`}
+              onClick={() => setShowLangDropdown((v) => !v)}
+              aria-label="Change Language"
+            >
+              <Languages size={20} strokeWidth={3} />
+            </button>
+          </Tooltip>
           {showLangDropdown ? (
             <div className="pz-lang-dropdown">
               <button
@@ -93,24 +114,30 @@ export function TopBar() {
         </div>
 
         {installPrompt ? (
-          <button className="pz-topbar-btn pz-install-btn" onClick={install} title={t('install_app')} aria-label={t('install_app')}>
-            <Download size={20} />
-          </button>
+          <Tooltip content={t('install_app')}>
+            <button className="pz-topbar-btn pz-install-btn" onClick={install} aria-label={t('install_app')}>
+              <Download size={20} strokeWidth={3} />
+            </button>
+          </Tooltip>
         ) : null}
 
-        <button className="pz-topbar-btn" onClick={() => setShowHelp(true)} title={t('help_title')} aria-label={t('help_title')}>
-          <HelpCircle size={20} />
-        </button>
+        <Tooltip content={t('help_title')}>
+          <button className="pz-topbar-btn" onClick={() => setShowHelp(true)} aria-label={t('help_title')}>
+            <HelpCircle size={20} strokeWidth={3} />
+          </button>
+        </Tooltip>
 
-        <a
-          href={githubRepoUrl()}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="pz-github-link"
-          aria-label="GitHub Repository"
-        >
-          <GithubIcon size={20} />
-        </a>
+        <Tooltip content="GitHub Repository">
+          <a
+            href={githubRepoUrl()}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="pz-github-link"
+            aria-label="GitHub Repository"
+          >
+            <GithubIcon size={20} strokeWidth={3} />
+          </a>
+        </Tooltip>
       </div>
 
       {showHelp ? <HelpModal onClose={() => setShowHelp(false)} /> : null}

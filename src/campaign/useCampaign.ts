@@ -5,17 +5,13 @@ import { applyResult, type CampaignProgress, isComplete, loadProgress, restarted
 
 export interface Campaign {
   progress: CampaignProgress;
-  /** Next opponent tier to play (valid while the run isn't complete). */
-  tier: number;
+    tier: number;
   complete: boolean;
   length: number;
-  /** Fold a finished match's result into the saved progress. */
-  record: (won: boolean) => void;
-  /** Start the run over from tier 0 (keeps the completion badge). */
-  restart: () => void;
+    record: (won: boolean) => void;
+    restart: () => void;
 }
 
-/** React wrapper over the campaign save slot for `difficulty`. */
 export function useCampaign(difficulty: Difficulty): Campaign {
   const [progress, setProgress] = useState<CampaignProgress>(() => loadProgress(difficulty));
 

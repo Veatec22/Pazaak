@@ -1,4 +1,4 @@
-import { Flame, Shield, Skull, Swords } from 'lucide-react';
+import { ArrowLeft, Flame, Shield, Skull, Swords } from 'lucide-react';
 import type { ComponentType } from 'react';
 
 import { CAMPAIGN_LENGTH, type Difficulty } from '../../engine';
@@ -13,7 +13,6 @@ const DIFFICULTIES: { id: Difficulty; icon: ComponentType<{ size?: number }> }[]
   { id: 'hardcore', icon: Skull },
 ];
 
-/** Pick a campaign difficulty; each card shows its saved progress. */
 export function CampaignScreen({ onPick, onLeave }: { onPick: (difficulty: Difficulty) => void; onLeave: () => void }) {
   const { t } = useI18n();
 
@@ -31,7 +30,7 @@ export function CampaignScreen({ onPick, onLeave }: { onPick: (difficulty: Diffi
               ? t('campaign_not_started')
               : t('campaign_progress', { tier: Math.min(p.tier + 1, CAMPAIGN_LENGTH), total: CAMPAIGN_LENGTH });
           return (
-            <button key={id} className="pz-btn big pz-difficulty" onClick={() => onPick(id)}>
+            <button key={id} className="pz-btn big primary pz-difficulty" onClick={() => onPick(id)}>
               <span className="pz-btn-title">
                 <Icon size={20} />
                 {t(`difficulty_${id}`)}
@@ -41,6 +40,12 @@ export function CampaignScreen({ onPick, onLeave }: { onPick: (difficulty: Diffi
             </button>
           );
         })}
+        <button className="pz-btn big" onClick={onLeave}>
+          <span className="pz-btn-title">
+            <ArrowLeft size={20} />
+            {t('btn_back')}
+          </span>
+        </button>
       </div>
     </MenuScreen>
   );

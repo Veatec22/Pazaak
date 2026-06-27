@@ -9,7 +9,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['brand/favicon-48.png', 'brand/logo-192.png', 'brand/logo-512.png'],
+      includeAssets: ['brand/favicon-48.png', 'brand/icon-192.png', 'brand/icon-512.png'],
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,wav}'],
         maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
@@ -25,10 +25,10 @@ export default defineConfig({
         display: 'standalone',
         orientation: 'any',
         icons: [
-          { src: 'brand/logo-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
-          { src: 'brand/logo-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
-          { src: 'brand/logo-192.png', sizes: '192x192', type: 'image/png', purpose: 'maskable' },
-          { src: 'brand/logo-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          { src: 'brand/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: 'brand/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          { src: 'brand/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'maskable' },
+          { src: 'brand/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
     }),

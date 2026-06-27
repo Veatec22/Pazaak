@@ -1,10 +1,9 @@
-import { Copy, Share2 } from 'lucide-react';
+import { ArrowLeft, Copy, Share2 } from 'lucide-react';
 import { useState } from 'react';
 
 import { useI18n } from '../../net/useI18n';
 import { MenuScreen } from './MenuScreen';
 
-/** Host's "room created — waiting for a friend" screen, with code + invite link to share. */
 export function WaitingRoom({ roomId, onLeave }: { roomId: string; onLeave: () => void }) {
   const { t } = useI18n();
   const url = `${location.origin}${location.pathname}#room=${roomId}`;
@@ -66,6 +65,10 @@ export function WaitingRoom({ roomId, onLeave }: { roomId: string; onLeave: () =
               {t('btn_share_link')}
             </button>
           ) : null}
+          <button className="pz-btn" onClick={onLeave}>
+            <ArrowLeft size={16} style={{ marginRight: '8px' }} />
+            {t('btn_cancel')}
+          </button>
         </div>
       </div>
     </MenuScreen>

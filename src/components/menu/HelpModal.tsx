@@ -2,7 +2,6 @@ import { X } from 'lucide-react';
 
 import { useI18n } from '../../net/useI18n';
 
-/** The "how to play" modal opened from the TopBar. */
 export function HelpModal({ onClose }: { onClose: () => void }) {
   const { t } = useI18n();
   return (

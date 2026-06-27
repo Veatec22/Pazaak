@@ -3,14 +3,10 @@ import type { ReactNode } from 'react';
 
 import { TopBar } from './TopBar';
 
-/**
- * Shared menu chrome: the `.pz-lobby` shell + TopBar + optional back button + the centred
- * content column. Every menu screen renders its body inside this.
- */
+const LOGO = `${import.meta.env.BASE_URL}brand/logo.png`;
+
 export function MenuScreen({
   variant,
-  onBack,
-  backLabel,
   topBar = true,
   children,
 }: {
@@ -23,12 +19,12 @@ export function MenuScreen({
   return (
     <div className={`pz-lobby ${variant ?? ''}`}>
       {topBar ? <TopBar /> : null}
-      {onBack ? (
-        <button className="pz-leave" onClick={onBack}>
-          <ArrowLeft size={16} /> {backLabel}
-        </button>
-      ) : null}
-      <div className="pz-lobby-content">{children}</div>
+      <div className="pz-lobby-header">
+        <img className="pz-logo-img" src={LOGO} alt="Pazaak Logo" />
+      </div>
+      <div className="pz-lobby-content">
+        {children}
+      </div>
     </div>
   );
 }

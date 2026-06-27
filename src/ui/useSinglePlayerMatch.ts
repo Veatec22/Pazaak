@@ -9,12 +9,9 @@ import { playPazaakSound, primePazaakSounds } from './sounds';
 const BOT_DELAY_MS = 800;
 
 export interface SinglePlayerOptions {
-  /** Which pool the player's deck is drawn from. Default: 'mix' (flip + classic). */
-  pool: CardPool;
-  /** Which campaign tier the AI plays (0..CAMPAIGN_LENGTH-1). Default: random. */
-  tierIndex: number;
-  /** Called once when the match ends, with whether the human (seat 0) won. */
-  onResult: (won: boolean) => void;
+    pool: CardPool;
+    tierIndex: number;
+    onResult: (won: boolean) => void;
 }
 
 export function useSinglePlayerMatch(opts: Partial<SinglePlayerOptions> = {}): MatchController {

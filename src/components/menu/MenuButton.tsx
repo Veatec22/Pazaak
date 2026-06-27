@@ -10,7 +10,6 @@ export interface MenuButtonProps {
   onClick?: () => void;
 }
 
-/** The big stacked menu button (icon + title + sub-label) used across every menu screen. */
 export function MenuButton({ icon: Icon, title, desc, primary, active, disabled, onClick }: MenuButtonProps) {
   const className = ['pz-btn', 'big', primary && 'primary', active && 'active', disabled && 'disabled']
     .filter(Boolean)

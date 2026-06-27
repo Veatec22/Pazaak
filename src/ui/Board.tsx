@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { X } from 'lucide-react';
 
 import type { Seat } from '../engine';
 import { cardArt, CARD_BACK, familyForCode } from './cardArt';
@@ -11,7 +12,7 @@ import './board.css';
 const SEATS: Seat[] = [0, 1];
 const TABLE_SLOTS = Array.from({ length: 9 }, (_, i) => i);
 
-export function Board({ controller }: { controller: MatchController }) {
+export function Board({ controller, onForfeit }: { controller: MatchController; onForfeit?: () => void }) {
   const {
     display,
     view,
@@ -29,6 +30,7 @@ export function Board({ controller }: { controller: MatchController }) {
     endSlot,
   } = controller;
   const [activeOption, setActiveOption] = useState<Record<number, number>>({});
+  const [showForfeitConfirm, setShowForfeitConfirm] = useState(false);
   const { t } = useI18n();
 
   const dropped = online && connection === 'disconnected';
@@ -67,7 +69,6 @@ export function Board({ controller }: { controller: MatchController }) {
     <div className="pz-root" onPointerDown={primePazaakSounds}>
       <TopBar />
       <header className="pz-header">
-        <h1>Pazaak</h1>
         <div className="pz-sub">
           {online ? <span className={`pz-conn ${connection ?? 'connecting'}`} aria-hidden /> : null}
           {subtitle}
@@ -118,7 +119,13 @@ export function Board({ controller }: { controller: MatchController }) {
                   {[0, 1, 2, 3].map((i) => {
                     if (isYou) {
                       const code = view?.you.hand[i];
-                      if (!code) return <div key={i} className="pz-hand-card empty" />;
+                      if (!code) {
+                        return (
+                          <div key={i} className="pz-hand-slot">
+                            <div className="pz-hand-card empty" />
+                          </div>
+                        );
+                      }
                       const options = view!.you.hand_options[i] ?? [code];
                       const opt = activeOption[i] ?? 0;
                       const label = options[opt];
@@ -157,7 +164,11 @@ export function Board({ controller }: { controller: MatchController }) {
                           </div>
                         );
                       }
-                      return <div key={i} className="pz-hand-card empty" />;
+                      return (
+                        <div key={i} className="pz-hand-slot">
+                          <div className="pz-hand-card empty" />
+                        </div>
+                      );
                     }
                   })}
                 </div>
@@ -176,6 +187,14 @@ export function Board({ controller }: { controller: MatchController }) {
           <button className="pz-btn primary" disabled={!yourTurn} onClick={() => act({ type: 'stand' })}>
             {t('btn_stand')}
           </button>
+          {!finished && onForfeit ? (
+            <button
+              className="pz-btn"
+              onClick={() => setShowForfeitConfirm(true)}
+            >
+              {t('btn_forfeit')}
+            </button>
+          ) : null}
           {finished && reset ? (
             <button className="pz-btn" onClick={reset}>
               {t('btn_new_match')}
@@ -207,6 +226,32 @@ export function Board({ controller }: { controller: MatchController }) {
         <div className="pz-overlay light">
           <div className="pz-spinner" />
           <div>{t(status)}</div>
+        </div>
+      ) : null}
+
+      {showForfeitConfirm && onForfeit ? (
+        <div className="pz-modal-overlay" onClick={() => setShowForfeitConfirm(false)}>
+          <div className="pz-modal-card" style={{ maxWidth: '380px' }} onClick={(e) => e.stopPropagation()}>
+            <div className="pz-modal-header">
+              <h3>{t('btn_forfeit')}</h3>
+              <button className="pz-modal-close" onClick={() => setShowForfeitConfirm(false)}>
+                <X size={20} />
+              </button>
+            </div>
+            <div className="pz-modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '20px', alignItems: 'center', textAlign: 'center', padding: '16px 0 0' }}>
+              <p style={{ fontSize: '1.05rem', color: 'var(--text-bright)', fontWeight: 600, margin: 0 }}>
+                {t('confirm_forfeit')}
+              </p>
+              <div style={{ display: 'flex', gap: '12px', width: '100%' }}>
+                <button className="pz-btn primary" style={{ flex: 1 }} onClick={onForfeit}>
+                  {t('btn_yes')}
+                </button>
+                <button className="pz-btn" style={{ flex: 1 }} onClick={() => setShowForfeitConfirm(false)}>
+                  {t('btn_no')}
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       ) : null}
     </div>

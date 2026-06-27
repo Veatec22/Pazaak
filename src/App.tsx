@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import { LeaveButton } from './components/menu/LeaveButton';
+
 import { CampaignGame } from './components/singleplayer/CampaignGame';
 import { CampaignScreen } from './components/singleplayer/CampaignScreen';
 import { QuickGame } from './components/singleplayer/QuickGame';
@@ -82,7 +82,7 @@ export default function App() {
 
   let content;
   if (route.mode === 'main-menu') {
-    content = <MainMenu onGoSinglePlayer={go('singleplayer')} onGoMultiplayer={go('multiplayer')} onHotSeat={go('hotseat')} />;
+    content = <MainMenu onGoSinglePlayer={go('singleplayer')} onGoMultiplayer={go('multiplayer')} />;
   } else if (route.mode === 'single-menu') {
     content = <SinglePlayerMenu onQuickMatch={go('quick')} onCampaign={go('campaign')} onLeave={leave} />;
   } else if (route.mode === 'quick-setup') {
@@ -94,7 +94,7 @@ export default function App() {
   } else if (route.mode === 'campaign-game') {
     content = <CampaignGame difficulty={route.difficulty} onLeave={go('campaign')} />;
   } else if (route.mode === 'multi-menu') {
-    content = <MultiplayerMenu onPlayFriend={playFriend} onLeave={leave} />;
+    content = <MultiplayerMenu onPlayFriend={playFriend} onHotSeat={go('hotseat')} onLeave={leave} />;
   } else if (route.mode === 'hotseat') {
     content = <HotSeatGame onLeave={leave} />;
   } else {
@@ -110,8 +110,7 @@ function HotSeatGame({ onLeave }: { onLeave: () => void }) {
   const controller = useMatch();
   return (
     <>
-      <LeaveButton onLeave={onLeave} />
-      <Board controller={controller} />
+      <Board controller={controller} onForfeit={onLeave} />
     </>
   );
 }
@@ -125,7 +124,6 @@ function OnlineGame({ roomId, isHost, onLeave }: { roomId: string; isHost: boole
   if (isHost && controller.connection === 'connecting') {
     return (
       <>
-        <LeaveButton onLeave={onLeave} />
         <WaitingRoom roomId={roomId} onLeave={onLeave} />
       </>
     );
@@ -133,9 +131,8 @@ function OnlineGame({ roomId, isHost, onLeave }: { roomId: string; isHost: boole
 
   return (
     <>
-      <LeaveButton onLeave={onLeave} />
       {isHost ? <ShareBar roomId={roomId} /> : null}
-      <Board controller={controller} />
+      <Board controller={controller} onForfeit={onLeave} />
     </>
   );
 }

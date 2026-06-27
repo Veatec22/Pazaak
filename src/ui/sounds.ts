@@ -1,8 +1,4 @@
-
-
-
-
-
+import { useState, useEffect } from 'react';
 
 export type PazaakSound =
   | 'drawmain'
@@ -39,6 +35,38 @@ let context: AudioContext | null = null;
 const buffers = new Map<PazaakSound, AudioBuffer>();
 let enabled = true;
 
+let sfxMuted = typeof window !== 'undefined' ? localStorage.getItem('pz-sfx-muted') === 'true' : false;
+const sfxListeners = new Set<(muted: boolean) => void>();
+
+export function isSfxMuted(): boolean {
+  return sfxMuted;
+}
+
+export function setSfxMuted(muted: boolean): void {
+  sfxMuted = muted;
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('pz-sfx-muted', String(muted));
+  }
+  sfxListeners.forEach((l) => l(muted));
+}
+
+export function useSfxMute() {
+  const [muted, setMutedState] = useState(sfxMuted);
+
+  useEffect(() => {
+    const handler = (m: boolean) => setMutedState(m);
+    sfxListeners.add(handler);
+    return () => {
+      sfxListeners.delete(handler);
+    };
+  }, []);
+
+  return {
+    muted,
+    toggle: () => setSfxMuted(!sfxMuted),
+  };
+}
+
 export function primePazaakSounds(): void {
   if (!enabled) return;
   const Ctor = audioContextCtor();
@@ -68,7 +96,7 @@ export function primePazaakSounds(): void {
 }
 
 export function playPazaakSound(name: PazaakSound): void {
-  if (!enabled || !context) return;
+  if (sfxMuted || !enabled || !context) return;
   const buffer = buffers.get(name);
   if (!buffer) return;
   const source = context.createBufferSource();

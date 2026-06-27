@@ -29,19 +29,12 @@ export interface MusicState {
 
 const MusicContext = createContext<MusicState | null>(null);
 
-/** Access the shared cantina-music player. Must be inside <MusicProvider>. */
 export function useMusic(): MusicState {
   const ctx = useContext(MusicContext);
   if (!ctx) throw new Error('useMusic must be used within MusicProvider');
   return ctx;
 }
 
-/**
- * Owns the single persistent <audio> element and all playback state, so the cantina music
- * keeps playing across every screen (the controls live up in the TopBar and just call in
- * here). Sequential next/prev, three loop modes (off / whole playlist / current track),
- * progress + seek, mute and volume — all persisted to localStorage.
- */
 export function MusicProvider({ children }: { children: ReactNode }) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const startedRef = useRef(false);
