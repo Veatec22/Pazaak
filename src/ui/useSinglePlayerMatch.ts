@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { aiDeck, CAMPAIGN_LENGTH, chooseBotAction, MatchSession, PazaakGame, playerDeck, SeededRng } from '../engine';
-import type { ActionDict, Difficulty, SeatState } from '../engine';
+import { aiDeck, CAMPAIGN_LENGTH, type CardPool, chooseBotAction, deckFromPool, MatchSession, PazaakGame, SeededRng } from '../engine';
+import type { ActionDict, SeatState } from '../engine';
 import type { MatchController } from './controller';
 import { useReplay } from './replay';
 import { playPazaakSound, primePazaakSounds } from './sounds';
@@ -9,8 +9,8 @@ import { playPazaakSound, primePazaakSounds } from './sounds';
 const BOT_DELAY_MS = 800;
 
 export interface SinglePlayerOptions {
-  /** Which pool the player's deck is drawn from. Default: 'normal' (flip + classic). */
-  difficulty: Difficulty;
+  /** Which pool the player's deck is drawn from. Default: 'mix' (flip + classic). */
+  pool: CardPool;
   /** Which campaign tier the AI plays (0..CAMPAIGN_LENGTH-1). Default: random. */
   tierIndex: number;
   /** Called once when the match ends, with whether the human (seat 0) won. */
@@ -80,9 +80,9 @@ export function useSinglePlayerMatch(opts: Partial<SinglePlayerOptions> = {}): M
       window.clearTimeout(botTimeoutRef.current);
     }
     const rng = new SeededRng((Math.random() * 1e9) >>> 0);
-    const difficulty = optsRef.current.difficulty ?? 'normal';
+    const pool = optsRef.current.pool ?? 'mix';
     const tier = optsRef.current.tierIndex ?? rng.randint(0, CAMPAIGN_LENGTH - 1);
-    const game = new PazaakGame(playerDeck(rng, difficulty), aiDeck(tier), { rng });
+    const game = new PazaakGame(deckFromPool(rng, pool), aiDeck(tier), { rng });
     const session = new MatchSession(game);
     sessionRef.current = session;
     resultFiredRef.current = false;

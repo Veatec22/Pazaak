@@ -26,6 +26,7 @@ export function Board({ controller }: { controller: MatchController }) {
     connection,
     act,
     reset,
+    endSlot,
   } = controller;
   const [activeOption, setActiveOption] = useState<Record<number, number>>({});
   const { t } = useI18n();
@@ -186,11 +187,13 @@ export function Board({ controller }: { controller: MatchController }) {
       {banner ? (
         <div className={`pz-banner ${banner.kind}`}>
           <div>{banner.text}</div>
-          {banner.kind === 'match' && reset ? (
-            <button className="pz-btn primary" onClick={reset}>
-              {t('btn_play_again')}
-            </button>
-          ) : null}
+          {banner.kind === 'match'
+            ? (endSlot ?? (reset ? (
+                <button className="pz-btn primary" onClick={reset}>
+                  {t('btn_play_again')}
+                </button>
+              ) : null))
+            : null}
         </div>
       ) : null}
 

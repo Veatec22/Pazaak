@@ -1,42 +1,62 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import { MainMenu, MultiplayerMenu, SinglePlayerMenu, ShareBar, WaitingRoom } from './Lobby';
+import { LeaveButton } from './components/menu/LeaveButton';
+import { CampaignGame } from './components/singleplayer/CampaignGame';
+import { CampaignScreen } from './components/singleplayer/CampaignScreen';
+import { QuickGame } from './components/singleplayer/QuickGame';
+import { QuickMatchSetup } from './components/singleplayer/QuickMatchSetup';
+import type { CardPool, Difficulty } from './engine';
+import { MainMenu, MultiplayerMenu, ShareBar, SinglePlayerMenu, WaitingRoom } from './Lobby';
 import { MusicProvider } from './music/MusicProvider';
-import { useOnlineMatch } from './net/useOnlineMatch';
-import { installClickSound } from './ui/uiSounds';
 import { getSavedNickname, useLobbyAnnouncer } from './net/useLobby';
+import { useOnlineMatch } from './net/useOnlineMatch';
 import { Board } from './ui/Board';
+import { installClickSound } from './ui/uiSounds';
 import { useMatch } from './ui/useMatch';
-import { useSinglePlayerMatch } from './ui/useSinglePlayerMatch';
 
 type Route =
   | { mode: 'main-menu' }
   | { mode: 'single-menu' }
-  | { mode: 'single-game' }
+  | { mode: 'quick-setup' }
+  | { mode: 'quick-game'; pool: CardPool }
+  | { mode: 'campaign' }
+  | { mode: 'campaign-game'; difficulty: Difficulty }
   | { mode: 'multi-menu' }
   | { mode: 'hotseat' }
   | { mode: 'online'; roomId: string; isHost: boolean };
 
 const hostKey = (id: string) => `pz-host-${id}`;
+const POOLS = ['classic', 'flip', 'mix'];
+const DIFFICULTIES = ['easy', 'normal', 'hard', 'hardcore'];
 
 function parseRoute(): Route {
-  const m = /[#&]room=([^&]+)/.exec(location.hash);
-  if (m) {
-    const roomId = decodeURIComponent(m[1]);
+  const hash = location.hash;
+  const room = /[#&]room=([^&]+)/.exec(hash);
+  if (room) {
+    const roomId = decodeURIComponent(room[1]);
     return { mode: 'online', roomId, isHost: sessionStorage.getItem(hostKey(roomId)) === '1' };
   }
-  const multi = location.hash === '#multiplayer';
-  if (multi) return { mode: 'multi-menu' };
-  const single = location.hash === '#singleplayer';
-  if (single) return { mode: 'single-menu' };
-  const quickplay = location.hash === '#quickplay';
-  if (quickplay) return { mode: 'single-game' };
-  const hotseat = location.hash === '#hotseat';
-  if (hotseat) return { mode: 'hotseat' };
+  if (hash === '#multiplayer') return { mode: 'multi-menu' };
+  if (hash === '#singleplayer') return { mode: 'single-menu' };
+  if (hash === '#hotseat') return { mode: 'hotseat' };
+
+  const quick = /^#quick(?:=([a-z]+))?$/.exec(hash);
+  if (quick) {
+    const pool = quick[1];
+    return POOLS.includes(pool) ? { mode: 'quick-game', pool: pool as CardPool } : { mode: 'quick-setup' };
+  }
+  const camp = /^#campaign(?:=([a-z]+))?$/.exec(hash);
+  if (camp) {
+    const d = camp[1];
+    return DIFFICULTIES.includes(d) ? { mode: 'campaign-game', difficulty: d as Difficulty } : { mode: 'campaign' };
+  }
   return { mode: 'main-menu' };
 }
 
 const newRoomId = () => Math.random().toString(36).slice(2, 8) + Math.random().toString(36).slice(2, 6);
+const go = (hash: string) => () => {
+  location.hash = hash;
+};
 
 export default function App() {
   const [route, setRoute] = useState<Route>(parseRoute);
@@ -49,26 +69,10 @@ export default function App() {
 
   useEffect(() => installClickSound(), []); // KotOR click cue on every button press
 
-  const goToSinglePlayer = useCallback(() => {
-    location.hash = 'singleplayer';
-  }, []);
-
-  const goToMultiplayer = useCallback(() => {
-    location.hash = 'multiplayer';
-  }, []);
-
   const playFriend = useCallback(() => {
     const id = newRoomId();
     sessionStorage.setItem(hostKey(id), '1');
     location.hash = `room=${id}`;
-  }, []);
-
-  const playBot = useCallback(() => {
-    location.hash = 'quickplay';
-  }, []);
-
-  const hotSeat = useCallback(() => {
-    location.hash = 'hotseat';
   }, []);
 
   const leave = useCallback(() => {
@@ -76,17 +80,19 @@ export default function App() {
     setRoute({ mode: 'main-menu' });
   }, []);
 
-  const leaveSingleGame = useCallback(() => {
-    location.hash = 'singleplayer';
-  }, []);
-
   let content;
   if (route.mode === 'main-menu') {
-    content = <MainMenu onGoSinglePlayer={goToSinglePlayer} onGoMultiplayer={goToMultiplayer} onHotSeat={hotSeat} />;
+    content = <MainMenu onGoSinglePlayer={go('singleplayer')} onGoMultiplayer={go('multiplayer')} onHotSeat={go('hotseat')} />;
   } else if (route.mode === 'single-menu') {
-    content = <SinglePlayerMenu onPlayBot={playBot} onLeave={leave} />;
-  } else if (route.mode === 'single-game') {
-    content = <SinglePlayerGame onLeave={leaveSingleGame} />;
+    content = <SinglePlayerMenu onQuickMatch={go('quick')} onCampaign={go('campaign')} onLeave={leave} />;
+  } else if (route.mode === 'quick-setup') {
+    content = <QuickMatchSetup onPick={(pool) => (location.hash = `quick=${pool}`)} onLeave={go('singleplayer')} />;
+  } else if (route.mode === 'quick-game') {
+    content = <QuickGame pool={route.pool} onLeave={go('singleplayer')} />;
+  } else if (route.mode === 'campaign') {
+    content = <CampaignScreen onPick={(d) => (location.hash = `campaign=${d}`)} onLeave={go('singleplayer')} />;
+  } else if (route.mode === 'campaign-game') {
+    content = <CampaignGame difficulty={route.difficulty} onLeave={go('campaign')} />;
   } else if (route.mode === 'multi-menu') {
     content = <MultiplayerMenu onPlayFriend={playFriend} onLeave={leave} />;
   } else if (route.mode === 'hotseat') {
@@ -114,7 +120,6 @@ function OnlineGame({ roomId, isHost, onLeave }: { roomId: string; isHost: boole
   const controller = useOnlineMatch(roomId, isHost);
   const nickname = getSavedNickname();
 
-
   useLobbyAnnouncer(roomId, nickname, isHost && controller.connection === 'connecting');
 
   if (isHost && controller.connection === 'connecting') {
@@ -132,23 +137,5 @@ function OnlineGame({ roomId, isHost, onLeave }: { roomId: string; isHost: boole
       {isHost ? <ShareBar roomId={roomId} /> : null}
       <Board controller={controller} />
     </>
-  );
-}
-
-function SinglePlayerGame({ onLeave }: { onLeave: () => void }) {
-  const controller = useSinglePlayerMatch();
-  return (
-    <>
-      <LeaveButton onLeave={onLeave} />
-      <Board controller={controller} />
-    </>
-  );
-}
-
-function LeaveButton({ onLeave }: { onLeave: () => void }) {
-  return (
-    <button className="pz-leave" onClick={onLeave} aria-label="Back to menu">
-      ← Menu
-    </button>
   );
 }

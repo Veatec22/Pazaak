@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react';
+
 import type { ActionDict, Seat, SeatState } from '../engine';
 
 export interface DisplayCard {
@@ -52,4 +54,10 @@ export interface MatchController {
   act: (action: ActionDict) => void;
 
   reset?: () => void;
+
+  /**
+   * Custom call-to-action(s) for the match-over banner, replacing the default "Play again".
+   * Lets the single-player wrappers inject Next / Retry / Menu buttons.
+   */
+  endSlot?: ReactNode;
 }
