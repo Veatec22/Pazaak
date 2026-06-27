@@ -16,7 +16,7 @@ export default defineConfig({
         navigateFallback: 'index.html',
       },
       manifest: {
-        name: 'Pazaak — Republic Cantina Edition',
+        name: 'Pazaak',
         short_name: 'Pazaak',
         description: 'Play pazaak (the KotOR card game) against a friend, peer-to-peer.',
         start_url: '.',
