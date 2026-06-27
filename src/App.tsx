@@ -63,6 +63,7 @@ export default function App() {
   const [route, setRoute] = useState<Route>(parseRoute);
   const { t } = useI18n();
   const [programmaticTransition, setProgrammaticTransition] = useState(false);
+  const [showExitConfirm, setShowExitConfirm] = useState(false);
 
   const handleLeave = useCallback((targetHash: string) => {
     setProgrammaticTransition(true);
@@ -108,21 +109,14 @@ export default function App() {
   }, [route.mode]);
 
   useEffect(() => {
-    const onPopState = () => {
-      if (route.mode === 'main-menu') {
-        const confirmExit = window.confirm(t('confirm_exit'));
-        if (confirmExit) {
-          // Let them go back (exit the app)
-          history.back();
-        } else {
-          // Push dummy state again to stay
-          history.pushState(null, '');
-        }
+    const onPopState = (e: PopStateEvent) => {
+      if (route.mode === 'main-menu' && e.state?.root === true) {
+        setShowExitConfirm(true);
       }
     };
     window.addEventListener('popstate', onPopState);
     return () => window.removeEventListener('popstate', onPopState);
-  }, [route.mode, t]);
+  }, [route.mode]);
 
   useEffect(() => installClickSound(), []); // KotOR click cue on every button press
 
@@ -160,7 +154,28 @@ export default function App() {
 
   // MusicProvider owns the persistent <audio>, so the cantina music keeps playing across
   // every screen; the controls themselves live in the TopBar.
-  return <MusicProvider>{content}</MusicProvider>;
+  return (
+    <MusicProvider>
+      {content}
+      {showExitConfirm ? (
+        <div className="pz-modal-overlay" onClick={() => { setShowExitConfirm(false); history.pushState(null, ''); }}>
+          <div className="pz-modal-card" style={{ maxWidth: '360px' }} onClick={(e) => e.stopPropagation()}>
+            <div className="pz-modal-header" style={{ borderBottom: 'none', paddingBottom: '0', marginBottom: '8px' }}>
+              <h3>{t('confirm_exit')}</h3>
+            </div>
+            <div className="pz-modal-body" style={{ display: 'flex', gap: '12px', marginTop: '16px', padding: '0 0 12px' }}>
+              <button className="pz-btn primary" style={{ flex: 1 }} onClick={() => { setShowExitConfirm(false); history.back(); }}>
+                {t('btn_yes')}
+              </button>
+              <button className="pz-btn" style={{ flex: 1 }} onClick={() => { setShowExitConfirm(false); history.pushState(null, ''); }}>
+                {t('btn_no')}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+    </MusicProvider>
+  );
 }
 
 function HotSeatGame({ onLeave }: { onLeave: () => void }) {
