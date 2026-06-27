@@ -1,4 +1,3 @@
-import { ArrowLeft } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 import { TopBar } from './TopBar';

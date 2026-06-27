@@ -1,4 +1,5 @@
-export function GithubIcon({ size = 20 }: { size?: number }) {
+export function GithubIcon(props: { size?: number; strokeWidth?: number }) {
+  const { size = 20 } = props;
   return (
     <svg
       width={size}
