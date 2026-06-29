@@ -1,0 +1,91 @@
+.pz-root {
+  height: 100svh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  --pz-card-h: clamp(56px, 9vh, 90px);
+  --pz-card-gap: clamp(4px, 1vw, 8px);
+  color: var(--text);
+  font-family: "Science Gothic", sans-serif;
+  background:
+    radial-gradient(1200px 600px at 50% -10%, rgba(26, 178, 140, 0.12), transparent 60%),
+    var(--bg);
+}
+
+@media (display-mode: standalone) {
+  .pz-root {
+    height: 100dvh;
+  }
+}
+
+
+.pz-header {
+  display: none;
+  text-align: center;
+  padding: 6px 12px 2px;
+  flex-shrink: 0;
+}
+.pz-header h1 {
+  margin: 0;
+  font-size: clamp(1.1rem, 3.5vw, 2.6rem);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--text-bright);
+  text-shadow: 0 0 24px rgba(26, 178, 140, 0.4);
+}
+.pz-sub {
+  margin-top: 2px;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+
+.pz-playfield {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  padding: 2px 6px;
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.pz-tables {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 4px;
+}
+
+
+.pz-player {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 4px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  transition: box-shadow 0.25s, border-color 0.25s;
+}
+.pz-player.you {
+  flex-direction: column;
+  gap: 2px;
+}
+.pz-player-content {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: row;
+  gap: 4px;
+}
+

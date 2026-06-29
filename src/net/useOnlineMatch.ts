@@ -1,0 +1,208 @@
+import { useCallback, useEffect, useRef, useState } from 'react';
+
+import { MatchSession, PazaakGame, randomSideDeck, SeededRng } from '../engine';
+import type { ActionDict, Seat, SeatState } from '../engine';
+import type { MatchController } from '../ui/controller';
+import { useReplay } from '../ui/replay';
+import { playPazaakSound, primePazaakSounds } from '../ui/sounds';
+import { actChannel, type ActMessage, createRoom, type Room, syncChannel, type SyncMessage } from './protocol';
+
+const HOST_SEAT: Seat = 0;
+const GUEST_SEAT: Seat = 1;
+const DEAL_PAUSE_MS = 650;
+const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+
+
+
+
+
+
+
+export function useOnlineMatch(roomId: string, isHost: boolean): MatchController {
+  const mySeat: Seat = isHost ? HOST_SEAT : GUEST_SEAT;
+  const { display, banner, finished, replay, resetDisplay, showSnapshot } = useReplay(mySeat);
+  const [view, setView] = useState<SeatState | null>(null);
+  const [activeSeat, setActiveSeat] = useState<Seat | null>(null);
+  const [busy, setBusy] = useState(true);
+  const [connection, setConnection] = useState<'connecting' | 'connected' | 'disconnected'>('connecting');
+  const [status, setStatus] = useState(
+    isHost ? 'status_waiting_for_friend' : 'status_connecting_to_host',
+  );
+
+  const sessionRef = useRef<MatchSession | null>(null);
+  const roomRef = useRef<Room | null>(null);
+  const sendSyncRef = useRef<((m: SyncMessage) => void) | null>(null);
+  const sendActRef = useRef<((m: ActMessage) => void) | null>(null);
+  const peerRef = useRef<string | null>(null);
+  const viewRef = useRef<SeatState | null>(null);
+  const chainRef = useRef<Promise<void>>(Promise.resolve());
+
+  const putView = useCallback((v: SeatState | null) => {
+    viewRef.current = v;
+    setView(v);
+  }, []);
+
+
+
+  const settleHost = useCallback(() => {
+    const s = sessionRef.current;
+    if (!s) return;
+    if (s.isOver) {
+      setActiveSeat(null);
+      putView(s.stateFor(HOST_SEAT));
+      setBusy(false);
+      return;
+    }
+    const seat = s.current!;
+    setActiveSeat(seat);
+    putView(s.stateFor(HOST_SEAT));
+    setBusy(false);
+    if (seat === HOST_SEAT) playPazaakSound('startturn');
+  }, [putView]);
+
+  const applyHost = useCallback(
+    (action: ActionDict, fromSeat: Seat) => {
+      const s = sessionRef.current;
+      if (!s || s.isOver || s.current !== fromSeat) return;
+      void (async () => {
+        setBusy(true);
+        const events = s.apply(action);
+        sendSyncRef.current?.({ kind: 'events', events, state: s.stateFor(GUEST_SEAT) });
+        if (action.type === 'play' && fromSeat === HOST_SEAT) putView(s.stateFor(HOST_SEAT));
+        await replay(events);
+        settleHost();
+      })();
+    },
+    [putView, replay, settleHost],
+  );
+
+  const startHostGame = useCallback(() => {
+    const rng = new SeededRng((Math.random() * 1e9) >>> 0);
+    const game = new PazaakGame(randomSideDeck(rng), randomSideDeck(rng), { rng });
+    const s = new MatchSession(game);
+    sessionRef.current = s;
+    void (async () => {
+      resetDisplay();
+      setBusy(true);
+      putView(s.stateFor(HOST_SEAT));
+      sendSyncRef.current?.({ kind: 'start', events: s.openingEvents, state: s.stateFor(GUEST_SEAT) });
+      await sleep(DEAL_PAUSE_MS);
+      await replay(s.openingEvents);
+      settleHost();
+    })();
+  }, [putView, replay, resetDisplay, settleHost]);
+
+
+
+  const settleGuest = useCallback((st: SeatState) => {
+    putView(st);
+    setActiveSeat(st.over ? null : st.your_turn ? GUEST_SEAT : HOST_SEAT);
+    setBusy(false);
+    if (st.your_turn && !st.over) playPazaakSound('startturn');
+  }, [putView]);
+
+  const handleSync = useCallback(
+    (msg: SyncMessage) => {
+      chainRef.current = chainRef.current.then(async () => {
+        setBusy(true);
+        if (msg.kind === 'resume') {
+
+          showSnapshot(msg.state);
+          settleGuest(msg.state);
+          return;
+        }
+        if (msg.kind === 'start') {
+          resetDisplay();
+          putView(msg.state);
+          await sleep(DEAL_PAUSE_MS);
+        }
+        await replay(msg.events);
+        settleGuest(msg.state);
+      });
+    },
+    [putView, replay, resetDisplay, settleGuest, showSnapshot],
+  );
+
+
+
+  useEffect(() => {
+
+
+
+    primePazaakSounds();
+
+    const room = createRoom(roomId);
+    roomRef.current = room;
+    const syncCh = syncChannel(room);
+    const actCh = actChannel(room);
+    sendSyncRef.current = (m) => void syncCh.send(m, peerRef.current ?? undefined);
+    sendActRef.current = (m) => void actCh.send(m, peerRef.current ?? undefined);
+
+    if (isHost) {
+      actCh.get((m) => applyHost(m.action, GUEST_SEAT));
+    } else {
+      syncCh.get((m) => handleSync(m));
+    }
+
+    room.onPeerJoin((id) => {
+      peerRef.current = id;
+      setConnection('connected');
+      if (isHost) {
+        setStatus('status_friend_connected');
+        if (!sessionRef.current) startHostGame();
+
+        else sendSyncRef.current?.({ kind: 'resume', state: sessionRef.current.stateFor(GUEST_SEAT) });
+      } else {
+        setStatus('status_connected_to_host');
+      }
+    });
+
+    room.onPeerLeave((id) => {
+      if (peerRef.current === id) peerRef.current = null;
+      setConnection('disconnected');
+      setStatus(isHost ? 'status_friend_disconnected' : 'status_host_disconnected');
+      setBusy(true);
+    });
+
+    return () => {
+      void room.leave();
+      roomRef.current = null;
+    };
+  }, [roomId, isHost, applyHost, handleSync, startHostGame]);
+
+
+
+  const act = useCallback(
+    (action: ActionDict) => {
+      if (finished) return;
+      const v = viewRef.current;
+      if (!v || !v.your_turn) return;
+      if (isHost) {
+        applyHost(action, HOST_SEAT);
+      } else {
+        setBusy(true);
+        sendActRef.current?.({ action });
+      }
+    },
+    [applyHost, finished, isHost],
+  );
+
+  const reset = useCallback(() => {
+    if (isHost && peerRef.current) startHostGame();
+  }, [isHost, startHostGame]);
+
+  return {
+    display,
+    view,
+    mySeat,
+    activeSeat,
+    banner,
+    busy,
+    finished,
+    status,
+    online: true,
+    connection,
+    act,
+    reset: isHost ? reset : undefined,
+  };
+}

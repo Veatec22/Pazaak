@@ -1,0 +1,32 @@
+#!/bin/sh
+
+# Get staged JS/TS files (space-separated)
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACMR | grep -E "\.(js|jsx|ts|tsx)$" || true)
+
+if [ -n "$STAGED_FILES" ]; then
+  echo "Running ESLint on staged files..."
+  
+  # Run eslint --fix on staged files
+  bunx eslint --fix $STAGED_FILES
+  
+  if [ $? -ne 0 ]; then
+    echo "❌ ESLint check failed. Please fix the errors above and try again."
+    exit 1
+  fi
+  
+  # Check if any files have unstaged changes (autofixed by eslint)
+  MODIFIED_FILES=$(git diff --name-only | grep -E "\.(js|jsx|ts|tsx)$" || true)
+  
+  if [ -n "$MODIFIED_FILES" ]; then
+    echo ""
+    echo "⚠️  ESLint automatically fixed some issues in the following files:"
+    echo "$MODIFIED_FILES"
+    echo "The fixes have been saved as UNSTAGED changes (in 'Changes')."
+    echo "Please review the changes, stage them, and try committing again."
+    exit 1
+  fi
+fi
+
+# Run typecheck
+echo "Running TypeScript typecheck..."
+bunx tsc -b

@@ -1,0 +1,17 @@
+node_modules/
+dist/
+.llm/
+*.local
+.DS_Store
+.vite/
+coverage/
+.idea/
+.vscode/
+*.tsbuildinfo
+.playwright-mcp/
+*.png
+!public/**/*.png
+.temp/
+# cantina-music audition clips (temp, local-only; finals live in public/music/)
+public/_audition/
+public/_audition.html
