@@ -100,6 +100,7 @@ interface PlayerView {
 interface OpponentView {
   total: number;
   table: TableCardTuple[];
+  hand_slots: boolean[];
   hand_size: number;
   standing: boolean;
   sets_won: number;
@@ -302,6 +303,7 @@ export class PazaakGame {
       opponent: {
         total: opp.total,
         table: opp.table.map((c) => [c.label, c.value, c.family] as TableCardTuple),
+        hand_slots: opp.hand.map((c) => c != null),
         hand_size: opp.hand.reduce((n, c) => (c ? n + 1 : n), 0),
         standing: opp.standing,
         sets_won: opp.setsWon,

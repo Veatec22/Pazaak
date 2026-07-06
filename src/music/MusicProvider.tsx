@@ -11,30 +11,6 @@ const LS_LOOP = 'pz-music-loop';
 export function MusicProvider({ children }: { children: ReactNode }) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const startedRef = useRef(false);
-  const audioCtxRef = useRef<AudioContext | null>(null);
-  const analyserRef = useRef<AnalyserNode | null>(null);
-  const [analyser, setAnalyser] = useState<AnalyserNode | null>(null);
-
-  const ensureAnalyser = useCallback(() => {
-    if (!analyserRef.current && audioRef.current) {
-      try {
-        const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-        const ctx = new Ctx();
-        const src = ctx.createMediaElementSource(audioRef.current);
-        const an = ctx.createAnalyser();
-        an.fftSize = 256;
-        an.smoothingTimeConstant = 0.8;
-        src.connect(an);
-        an.connect(ctx.destination);
-        audioCtxRef.current = ctx;
-        analyserRef.current = an;
-        setAnalyser(an);
-      } catch {
-        void 0;
-      }
-    }
-    void audioCtxRef.current?.resume();
-  }, []);
   const [index, setIndex] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -67,7 +43,6 @@ export function MusicProvider({ children }: { children: ReactNode }) {
     const start = () => {
       if (startedRef.current) return;
       startedRef.current = true;
-      ensureAnalyser();
       setPlaying(true);
       void audioRef.current?.play().catch(() => {});
     };
@@ -77,20 +52,19 @@ export function MusicProvider({ children }: { children: ReactNode }) {
       window.removeEventListener('pointerdown', start);
       window.removeEventListener('keydown', start);
     };
-  }, [ensureAnalyser]);
+  }, []);
 
   const toggle = useCallback(() => {
     const a = audioRef.current;
     if (!a) return;
     if (a.paused) {
-      ensureAnalyser();
       setPlaying(true);
       void a.play().catch(() => {});
     } else {
       a.pause();
       setPlaying(false);
     }
-  }, [ensureAnalyser]);
+  }, []);
 
   const next = useCallback(() => setIndex((i) => (i + 1) % PLAYLIST.length), []);
 
@@ -141,7 +115,6 @@ export function MusicProvider({ children }: { children: ReactNode }) {
     volume,
     currentTime,
     duration,
-    analyser,
     toggle,
     next,
     prev,

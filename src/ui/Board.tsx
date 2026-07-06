@@ -60,7 +60,6 @@ export function Board({
   }, [mySeat, view]);
 
   const [copiedLink, setCopiedLink] = useState(false);
-  const [copiedCode, setCopiedCode] = useState(false);
 
   const url = roomId ? `${window.location.origin}${window.location.pathname}#room=${roomId}` : '';
 
@@ -81,6 +80,9 @@ export function Board({
   const dropped = online && connection === 'disconnected';
   const waiting = online && connection === 'connecting' && !view && !isHost;
   const hotSeat = !online && !vsBot;
+  const opponentHandSlots =
+    view?.opponent.hand_slots ??
+    Array.from({ length: 4 }, (_, i) => i < (view?.opponent.hand_size ?? 4));
 
   const yourTurn = !!view?.your_turn && !busy && !finished;
   const canPlayHand = yourTurn && !view!.you.played_this_turn;
@@ -237,10 +239,11 @@ export function Board({
                           }
                           const oppHandSize = view?.opponent.hand_size ?? 4;
                           const knownCode = knownHands[seat]?.[i];
+                          const occupied = opponentHandSlots[i] ?? i < oppHandSize;
                           return (
                             <div key={i} className="pz-hand-slot">
                               <span className="pz-flip-spacer" />
-                              {i < oppHandSize ? (
+                              {occupied ? (
                                 <HandCardFlip
                                   code={knownCode}
                                   dealIn={handDealAnimation}
@@ -316,17 +319,6 @@ export function Board({
               
               {roomId ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '8px', borderTop: '1px solid var(--border)', paddingTop: '16px' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <label style={{ fontSize: '0.78rem', opacity: 0.7, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{t('room_code')}</label>
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      <input readOnly value={roomId} className="pz-share-url" style={{ flex: 1, padding: '8px 12px', background: 'rgba(0, 0, 0, 0.4)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text-bright)', fontSize: '0.9rem', fontFamily: 'monospace' }} />
-                      <button className="pz-btn" onClick={() => copy(roomId, setCopiedCode)}>
-                        <Copy size={14} />
-                        {copiedCode ? t('btn_copied') : t('btn_copy')}
-                      </button>
-                    </div>
-                  </div>
-
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                     <label style={{ fontSize: '0.78rem', opacity: 0.7, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{t('invite_link')}</label>
                     <div style={{ display: 'flex', gap: '8px' }}>

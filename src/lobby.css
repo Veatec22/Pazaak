@@ -621,6 +621,41 @@
   border-color: #1ab28c;
 }
 
+.pz-invite-qr-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 0 2px;
+}
+
+.pz-invite-qr {
+  width: min(184px, 58vw);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  padding: 8px;
+  border-radius: 10px;
+  background: #f7fffb;
+  border: 1px solid rgba(109, 243, 207, 0.55);
+  box-shadow: 0 0 18px rgba(26, 178, 140, 0.18);
+}
+
+.pz-invite-qr svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.pz-invite-qr-caption {
+  color: var(--accent-bright);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: center;
+}
+
 
 .pz-leave {
   position: absolute;

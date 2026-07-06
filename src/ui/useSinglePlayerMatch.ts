@@ -6,7 +6,7 @@ import type { MatchController } from './controller';
 import { useReplay } from './replay';
 import { playPazaakSound, primePazaakSounds } from './sounds';
 
-const BOT_DELAY_MS = 800;
+export const BOT_DELAY_MS = 350;
 const DEAL_PAUSE_MS = 650;
 
 export interface SinglePlayerOptions {
@@ -42,6 +42,7 @@ export function useSinglePlayerMatch(opts: Partial<SinglePlayerOptions> = {}): M
 
     const botAction = chooseBotAction(session.game, 1);
     const events = session.apply(botAction);
+    if (botAction.kind === 'play') setView(session.stateFor(0));
     await replay(events);
     settleRef.current();
   }, [replay]);

@@ -6,6 +6,7 @@
       "name": "pazaak-1v1",
       "dependencies": {
         "@faker-js/faker": "^10.5.0",
+        "@lglab/react-qr-code": "^1.7.0",
         "lucide-react": "^1.21.0",
         "react": "^19.1.0",
         "react-dom": "^19.1.0",
@@ -441,6 +442,8 @@
     "@jridgewell/trace-mapping": ["@jridgewell/trace-mapping@0.3.31", "", { "dependencies": { "@jridgewell/resolve-uri": "^3.1.0", "@jridgewell/sourcemap-codec": "^1.4.14" } }, "sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw=="],
 
     "@leichtgewicht/ip-codec": ["@leichtgewicht/ip-codec@2.0.5", "", {}, "sha512-Vo+PSpZG2/fmgmiNzYK9qWRh8h/CHrwD0mo1h1DzL4yzHNSfWYujGTYsWGreD000gcgmZ7K4Ys6Tx9TxtsKdDw=="],
+
+    "@lglab/react-qr-code": ["@lglab/react-qr-code@1.7.0", "", { "peerDependencies": { "react": "^18 || ^19" } }, "sha512-nocFONGSsDkgCKpMEvBkOsBZc7OXih4d9TDRBMdikLnlN4p5a63i2zfs2fEnsyyF02gBfhw8rgLWpFZNOyfabQ=="],
 
     "@libp2p/bootstrap": ["@libp2p/bootstrap@11.0.47", "", { "dependencies": { "@libp2p/interface": "^2.11.0", "@libp2p/interface-internal": "^2.3.19", "@libp2p/peer-id": "^5.1.9", "@multiformats/mafmt": "^12.1.6", "@multiformats/multiaddr": "^12.4.4", "main-event": "^1.0.1" } }, "sha512-D3V8AHZvX9R0cFD0BKmDp7fKTo+GgPFFWa55z62VP14yA3f3kSAELyZ7NujrD0QXEtUdd/d7suqeJ4tKGsnZ5A=="],
 
