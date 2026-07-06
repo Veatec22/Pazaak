@@ -44,6 +44,19 @@ describe('per-seat snapshot', () => {
     expect(state.opponent).toHaveProperty('hand_size');
   });
 
+  it('preserves opponent hand slot occupancy without revealing card codes', () => {
+    const s = session();
+    s.game.current = 1;
+    s.game.players[1].hand = [card('+1'), card('+2'), card('+3'), card('+4')];
+
+    s.apply(PlayHandCard(2));
+
+    const state = s.stateFor(0);
+    expect(state.opponent).not.toHaveProperty('hand');
+    expect(state.opponent).toHaveProperty('hand_slots', [true, true, false, true]);
+    expect(state.opponent.hand_size).toBe(3);
+  });
+
   it('offers labelled legal actions on your turn', () => {
     const state = session().stateFor(0);
     expect(state.your_turn).toBe(true);

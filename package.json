@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@faker-js/faker": "^10.5.0",
+    "@lglab/react-qr-code": "^1.7.0",
     "lucide-react": "^1.21.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

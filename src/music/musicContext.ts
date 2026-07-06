@@ -13,7 +13,6 @@ export interface MusicState {
   volume: number;
   currentTime: number;
   duration: number;
-  analyser: AnalyserNode | null;
   toggle: () => void;
   next: () => void;
   prev: () => void;

@@ -6,6 +6,8 @@ import { cardArt, CARD_BACK, familyForCode } from './cardArt';
 import type { DisplayCard, MatchController } from './controller';
 import { primePazaakSounds } from './sounds';
 import { useI18n } from '../net/useI18n';
+import { inviteUrlForRoom } from '../navigation';
+import { useCopyToClipboard } from './clipboard';
 import { TopBar } from '../Lobby';
 import './board.css';
 
@@ -59,21 +61,13 @@ export function Board({
     setKnownHands((prev) => ({ ...prev, [mySeat]: [...view.you.hand] }));
   }, [mySeat, view]);
 
-  const [copiedLink, setCopiedLink] = useState(false);
-  const [copiedCode, setCopiedCode] = useState(false);
+  const [copiedLink, copy] = useCopyToClipboard();
 
-  const url = roomId ? `${window.location.origin}${window.location.pathname}#room=${roomId}` : '';
-
-  const copy = (text: string, mark: (v: boolean) => void) => {
-    void navigator.clipboard?.writeText(text).then(() => {
-      mark(true);
-      setTimeout(() => mark(false), 2000);
-    });
-  };
+  const url = roomId ? inviteUrlForRoom(roomId) : '';
 
   const share = () => {
     if (navigator.share) void navigator.share({ title: 'Pazaak', text: t('share_message'), url }).catch(() => {});
-    else copy(url, setCopiedLink);
+    else copy(url);
   };
 
   const canShare = typeof navigator !== 'undefined' && !!navigator.share && !!url;
@@ -81,6 +75,9 @@ export function Board({
   const dropped = online && connection === 'disconnected';
   const waiting = online && connection === 'connecting' && !view && !isHost;
   const hotSeat = !online && !vsBot;
+  const opponentHandSlots =
+    view?.opponent.hand_slots ??
+    Array.from({ length: 4 }, (_, i) => i < (view?.opponent.hand_size ?? 4));
 
   const yourTurn = !!view?.your_turn && !busy && !finished;
   const canPlayHand = yourTurn && !view!.you.played_this_turn;
@@ -235,12 +232,12 @@ export function Board({
                               </div>
                             );
                           }
-                          const oppHandSize = view?.opponent.hand_size ?? 4;
                           const knownCode = knownHands[seat]?.[i];
+                          const occupied = opponentHandSlots[i];
                           return (
                             <div key={i} className="pz-hand-slot">
                               <span className="pz-flip-spacer" />
-                              {i < oppHandSize ? (
+                              {occupied ? (
                                 <HandCardFlip
                                   code={knownCode}
                                   dealIn={handDealAnimation}
@@ -317,21 +314,10 @@ export function Board({
               {roomId ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '8px', borderTop: '1px solid var(--border)', paddingTop: '16px' }}>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <label style={{ fontSize: '0.78rem', opacity: 0.7, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{t('room_code')}</label>
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      <input readOnly value={roomId} className="pz-share-url" style={{ flex: 1, padding: '8px 12px', background: 'rgba(0, 0, 0, 0.4)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text-bright)', fontSize: '0.9rem', fontFamily: 'monospace' }} />
-                      <button className="pz-btn" onClick={() => copy(roomId, setCopiedCode)}>
-                        <Copy size={14} />
-                        {copiedCode ? t('btn_copied') : t('btn_copy')}
-                      </button>
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                     <label style={{ fontSize: '0.78rem', opacity: 0.7, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{t('invite_link')}</label>
                     <div style={{ display: 'flex', gap: '8px' }}>
                       <input readOnly value={url} className="pz-share-url" style={{ flex: 1, padding: '8px 12px', background: 'rgba(0, 0, 0, 0.4)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text-bright)', fontSize: '0.9rem' }} onFocus={(e) => e.currentTarget.select()} />
-                      <button className="pz-btn" onClick={() => copy(url, setCopiedLink)}>
+                      <button className="pz-btn" onClick={() => copy(url)}>
                         <Copy size={14} />
                         {copiedLink ? t('btn_copied') : t('btn_copy')}
                       </button>
