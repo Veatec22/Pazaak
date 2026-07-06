@@ -1,8 +1,9 @@
 import { ArrowLeft, Copy, Share2 } from 'lucide-react';
 import { ReactQRCode } from '@lglab/react-qr-code';
-import { useState } from 'react';
 
 import { useI18n } from '../../net/useI18n';
+import { inviteUrlForRoom } from '../../navigation';
+import { useCopyToClipboard } from '../../ui/clipboard';
 
 const QR_ICON = `${import.meta.env.BASE_URL}brand/icon-192.png`;
 const QR_SIZE = 184;
@@ -10,19 +11,12 @@ const QR_ICON_SIZE = 38;
 
 export function WaitingRoom({ roomId, onLeave }: { roomId: string; onLeave: () => void }) {
   const { t } = useI18n();
-  const url = `${location.origin}${location.pathname}#room=${roomId}`;
-  const [copiedLink, setCopiedLink] = useState(false);
-
-  const copy = (text: string, mark: (v: boolean) => void) => {
-    void navigator.clipboard?.writeText(text).then(() => {
-      mark(true);
-      setTimeout(() => mark(false), 2000);
-    });
-  };
+  const url = inviteUrlForRoom(roomId);
+  const [copiedLink, copy] = useCopyToClipboard();
 
   const share = () => {
     if (navigator.share) void navigator.share({ title: 'Pazaak', text: t('share_message'), url }).catch(() => {});
-    else copy(url, setCopiedLink);
+    else copy(url);
   };
 
   const canShare = typeof navigator !== 'undefined' && !!navigator.share;
@@ -41,7 +35,7 @@ export function WaitingRoom({ roomId, onLeave }: { roomId: string; onLeave: () =
           </div>
 
           <div className="pz-invite-qr-panel">
-            <div className="pz-invite-qr" data-testid="invite-qr" data-value={url} aria-label={t('invite_qr_label')}>
+            <div className="pz-invite-qr" data-testid="invite-qr" data-value={url}>
               <ReactQRCode
                 value={url}
                 size={QR_SIZE}
@@ -57,7 +51,7 @@ export function WaitingRoom({ roomId, onLeave }: { roomId: string; onLeave: () =
                   height: QR_ICON_SIZE,
                   excavate: true,
                 }}
-                svgProps={{ role: 'img' }}
+                svgProps={{ role: 'img', 'aria-label': t('invite_qr_label') }}
               />
             </div>
             <div className="pz-invite-qr-caption">{t('scan_qr_to_join')}</div>
@@ -68,7 +62,7 @@ export function WaitingRoom({ roomId, onLeave }: { roomId: string; onLeave: () =
               <label style={{ fontSize: '0.78rem', opacity: 0.7, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{t('invite_link')}</label>
               <div style={{ display: 'flex', gap: '8px' }}>
                 <input readOnly value={url} className="pz-share-url" style={{ flex: 1, padding: '8px 12px', background: 'rgba(0, 0, 0, 0.4)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text-bright)', fontSize: '0.9rem' }} onFocus={(e) => e.currentTarget.select()} />
-                <button className="pz-btn" onClick={() => copy(url, setCopiedLink)}>
+                <button className="pz-btn" onClick={() => copy(url)}>
                   <Copy size={14} style={{ marginRight: '6px' }} />
                   {copiedLink ? t('btn_copied') : t('btn_copy')}
                 </button>

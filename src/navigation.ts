@@ -78,6 +78,10 @@ export function routeToUrl(route: Route): string {
   return `${location.pathname}${location.search}${hash}`;
 }
 
+export function inviteUrlForRoom(roomId: string): string {
+  return `${location.origin}${routeToUrl({ mode: 'online', roomId, isHost: false })}`;
+}
+
 export function isGameRoute(route: Route): boolean {
   return (
     route.mode === 'quick-game' ||

@@ -287,6 +287,7 @@ export class PazaakGame {
   viewFor(player: number): GameView {
     const me = this.players[player];
     const opp = this.players[1 - player];
+    const oppHandSlots = opp.hand.map((c) => c != null);
     return {
       phase: this.phase,
       set_number: this.setNumber,
@@ -303,8 +304,8 @@ export class PazaakGame {
       opponent: {
         total: opp.total,
         table: opp.table.map((c) => [c.label, c.value, c.family] as TableCardTuple),
-        hand_slots: opp.hand.map((c) => c != null),
-        hand_size: opp.hand.reduce((n, c) => (c ? n + 1 : n), 0),
+        hand_slots: oppHandSlots,
+        hand_size: oppHandSlots.filter(Boolean).length,
         standing: opp.standing,
         sets_won: opp.setsWon,
       },
