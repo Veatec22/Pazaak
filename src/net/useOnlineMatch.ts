@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { MatchSession, PazaakGame, randomSideDeck, SeededRng } from '../engine';
-import type { ActionDict, Seat, SeatState } from '../engine';
+import { deckFromPool, MatchSession, PazaakGame, SeededRng } from '../engine';
+import type { ActionDict, CardPool, Seat, SeatState } from '../engine';
 import type { MatchController } from '../ui/controller';
 import { useReplay } from '../ui/replay';
 import { playPazaakSound, primePazaakSounds } from '../ui/sounds';
 import { actChannel, type ActMessage, createRoom, type Room, syncChannel, type SyncMessage } from './protocol';
+import { getSavedNickname } from './useLobby';
 
 const HOST_SEAT: Seat = 0;
 const GUEST_SEAT: Seat = 1;
@@ -28,6 +29,11 @@ export function useOnlineMatch(roomId: string, isHost: boolean): MatchController
   const [status, setStatus] = useState(
     isHost ? 'status_waiting_for_friend' : 'status_connecting_to_host',
   );
+  const [lobbyMode, setLobbyModeState] = useState<CardPool>('mix');
+  const [guestName, setGuestName] = useState<string | null>(null);
+  const [guestReady, setGuestReadyState] = useState(false);
+  const [ready, setReady] = useState(false);
+  const [kicked, setKicked] = useState(false);
 
   const sessionRef = useRef<MatchSession | null>(null);
   const roomRef = useRef<Room | null>(null);
@@ -36,6 +42,8 @@ export function useOnlineMatch(roomId: string, isHost: boolean): MatchController
   const peerRef = useRef<string | null>(null);
   const viewRef = useRef<SeatState | null>(null);
   const chainRef = useRef<Promise<void>>(Promise.resolve());
+  const lobbyModeRef = useRef<CardPool>('mix');
+  const guestReadyRef = useRef(false);
 
   const putView = useCallback((v: SeatState | null) => {
     viewRef.current = v;
@@ -60,6 +68,44 @@ export function useOnlineMatch(roomId: string, isHost: boolean): MatchController
     if (seat === HOST_SEAT) playPazaakSound('startturn');
   }, [putView]);
 
+  const publishLobby = useCallback(() => {
+    sendSyncRef.current?.({
+      kind: 'lobby',
+      mode: lobbyModeRef.current,
+      guestReady: guestReadyRef.current,
+    });
+  }, []);
+
+  const setLobbyMode = useCallback(
+    (mode: CardPool) => {
+      if (!isHost || sessionRef.current) return;
+      lobbyModeRef.current = mode;
+      guestReadyRef.current = false;
+      setLobbyModeState(mode);
+      setGuestReadyState(false);
+      publishLobby();
+    },
+    [isHost, publishLobby],
+  );
+
+  const clearGuestLobbyState = useCallback(() => {
+    peerRef.current = null;
+    guestReadyRef.current = false;
+    setGuestName(null);
+    setGuestReadyState(false);
+  }, []);
+
+  const kickGuest = useCallback(() => {
+    if (!isHost || !peerRef.current || sessionRef.current) return;
+    const peerId = peerRef.current;
+    sendSyncRef.current?.({ kind: 'kicked' });
+    window.setTimeout(() => roomRef.current?.getPeers()[peerId]?.close(), 150);
+    clearGuestLobbyState();
+    setConnection('connecting');
+    setStatus('status_waiting_for_friend');
+    setBusy(true);
+  }, [clearGuestLobbyState, isHost]);
+
   const applyHost = useCallback(
     (action: ActionDict, fromSeat: Seat) => {
       const s = sessionRef.current;
@@ -77,8 +123,9 @@ export function useOnlineMatch(roomId: string, isHost: boolean): MatchController
   );
 
   const startHostGame = useCallback(() => {
+    if (!isHost || !peerRef.current || !guestReadyRef.current) return;
     const rng = new SeededRng((Math.random() * 1e9) >>> 0);
-    const game = new PazaakGame(randomSideDeck(rng), randomSideDeck(rng), { rng });
+    const game = new PazaakGame(deckFromPool(rng, lobbyModeRef.current), deckFromPool(rng, lobbyModeRef.current), { rng });
     const s = new MatchSession(game);
     sessionRef.current = s;
     void (async () => {
@@ -90,7 +137,7 @@ export function useOnlineMatch(roomId: string, isHost: boolean): MatchController
       await replay(s.openingEvents);
       settleHost();
     })();
-  }, [putView, replay, resetDisplay, settleHost]);
+  }, [isHost, putView, replay, resetDisplay, settleHost]);
 
 
 
@@ -105,6 +152,24 @@ export function useOnlineMatch(roomId: string, isHost: boolean): MatchController
     (msg: SyncMessage) => {
       chainRef.current = chainRef.current.then(async () => {
         setBusy(true);
+        if (msg.kind === 'lobby') {
+          lobbyModeRef.current = msg.mode;
+          guestReadyRef.current = msg.guestReady;
+          setLobbyModeState(msg.mode);
+          setGuestReadyState(msg.guestReady);
+          if (!isHost) setReady(msg.guestReady);
+          setBusy(true);
+          return;
+        }
+        if (msg.kind === 'kicked') {
+          setKicked(true);
+          setConnection('disconnected');
+          setStatus('status_kicked');
+          setReady(false);
+          setBusy(true);
+          await roomRef.current?.leave();
+          return;
+        }
         if (msg.kind === 'resume') {
 
           showSnapshot(msg.state);
@@ -120,7 +185,7 @@ export function useOnlineMatch(roomId: string, isHost: boolean): MatchController
         settleGuest(msg.state);
       });
     },
-    [putView, replay, resetDisplay, settleGuest, showSnapshot],
+    [isHost, putView, replay, resetDisplay, settleGuest, showSnapshot],
   );
 
 
@@ -139,7 +204,21 @@ export function useOnlineMatch(roomId: string, isHost: boolean): MatchController
     sendActRef.current = (m) => void actCh.send(m, peerRef.current ?? undefined);
 
     if (isHost) {
-      actCh.get((m) => applyHost(m.action, GUEST_SEAT));
+      actCh.get((m) => {
+        if (m.kind === 'hello') {
+          setGuestName(m.nickname);
+          publishLobby();
+          return;
+        }
+        if (m.kind === 'ready') {
+          setGuestName(m.nickname);
+          guestReadyRef.current = m.ready;
+          setGuestReadyState(m.ready);
+          publishLobby();
+          return;
+        }
+        applyHost(m.action, GUEST_SEAT);
+      });
     } else {
       syncCh.get((m) => handleSync(m));
     }
@@ -149,26 +228,32 @@ export function useOnlineMatch(roomId: string, isHost: boolean): MatchController
       setConnection('connected');
       if (isHost) {
         setStatus('status_friend_connected');
-        if (!sessionRef.current) startHostGame();
-
-        else sendSyncRef.current?.({ kind: 'resume', state: sessionRef.current.stateFor(GUEST_SEAT) });
+        if (sessionRef.current) sendSyncRef.current?.({ kind: 'resume', state: sessionRef.current.stateFor(GUEST_SEAT) });
+        else publishLobby();
       } else {
         setStatus('status_connected_to_host');
+        setKicked(false);
+        sendActRef.current?.({ kind: 'hello', nickname: getSavedNickname() });
       }
     });
 
     room.onPeerLeave((id) => {
-      if (peerRef.current === id) peerRef.current = null;
+      const wasCurrentPeer = peerRef.current === id;
+      if (isHost && !wasCurrentPeer) return;
+      if (wasCurrentPeer) peerRef.current = null;
       setConnection('disconnected');
       setStatus(isHost ? 'status_friend_disconnected' : 'status_host_disconnected');
       setBusy(true);
+      if (isHost && !sessionRef.current) {
+        clearGuestLobbyState();
+      }
     });
 
     return () => {
       void room.leave();
       roomRef.current = null;
     };
-  }, [roomId, isHost, applyHost, handleSync, startHostGame]);
+  }, [roomId, isHost, applyHost, clearGuestLobbyState, handleSync, publishLobby]);
 
 
 
@@ -181,14 +266,21 @@ export function useOnlineMatch(roomId: string, isHost: boolean): MatchController
         applyHost(action, HOST_SEAT);
       } else {
         setBusy(true);
-        sendActRef.current?.({ action });
+        sendActRef.current?.({ kind: 'action', action });
       }
     },
     [applyHost, finished, isHost],
   );
 
+  const toggleReady = useCallback(() => {
+    if (isHost || sessionRef.current) return;
+    const next = !ready;
+    setReady(next);
+    sendActRef.current?.({ kind: 'ready', ready: next, nickname: getSavedNickname() });
+  }, [isHost, ready]);
+
   const reset = useCallback(() => {
-    if (isHost && peerRef.current) startHostGame();
+    if (isHost && peerRef.current && guestReadyRef.current) startHostGame();
   }, [isHost, startHostGame]);
 
   return {
@@ -202,6 +294,20 @@ export function useOnlineMatch(roomId: string, isHost: boolean): MatchController
     status,
     online: true,
     connection,
+    onlineLobby: {
+      isHost,
+      connected: connection === 'connected',
+      mode: lobbyMode,
+      guestName,
+      guestReady,
+      ready,
+      kicked,
+      canStart: isHost && connection === 'connected' && guestReady && !sessionRef.current,
+      setMode: setLobbyMode,
+      toggleReady,
+      kick: isHost ? kickGuest : undefined,
+      start: startHostGame,
+    },
     act,
     reset: isHost ? reset : undefined,
   };

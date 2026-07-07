@@ -138,6 +138,76 @@
   z-index: 5;
 }
 
+.pz-online-lobby-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+}
+
+.pz-online-lobby-label {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.pz-online-guest-row {
+  align-items: center;
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(109, 243, 207, 0.18);
+  border-radius: 7px;
+  color: var(--text-bright);
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+  padding: 8px 10px;
+}
+
+.pz-online-guest-row strong {
+  color: var(--accent-bright);
+}
+
+.pz-online-mode-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.pz-online-mode {
+  align-items: center;
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-bright);
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  font-weight: 700;
+  gap: 6px;
+  justify-content: center;
+  min-height: 38px;
+  padding: 8px 10px;
+}
+
+.pz-online-mode.active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px rgba(26, 178, 140, 0.25);
+  color: var(--accent);
+}
+
+.pz-online-mode:disabled {
+  cursor: default;
+  opacity: 0.85;
+}
+
+.pz-online-lobby-status {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
 
 .pz-btn {
   display: inline-flex;
@@ -154,6 +224,23 @@
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   text-transform: uppercase;
+}
+
+.pz-btn.compact {
+  min-height: 30px;
+  padding: 5px 10px;
+  font-size: 0.7rem;
+}
+
+.pz-btn.danger {
+  border-color: rgba(248, 86, 86, 0.55);
+  color: #ff9d9d;
+}
+
+.pz-btn.danger:hover {
+  background: rgba(248, 86, 86, 0.16);
+  border-color: rgba(248, 86, 86, 0.85);
+  color: #ffd0d0;
 }
 .pz-btn:hover:not(:disabled) {
   background: rgba(26, 178, 140, 0.15);
@@ -477,6 +564,156 @@
 .pz-modal-body::-webkit-scrollbar-thumb:hover {
   background: var(--accent-bright);
   background-clip: padding-box;
+}
+
+.pz-waiting-modal-card {
+  width: min(380px, calc(100vw - 24px));
+  gap: 10px;
+  padding: 14px;
+  border-radius: 8px;
+  background: rgba(3, 14, 11, 0.96);
+  border-color: rgba(109, 243, 207, 0.22);
+  box-shadow:
+    0 14px 32px rgba(0, 0, 0, 0.52),
+    0 0 0 1px rgba(109, 243, 207, 0.04);
+  text-align: left;
+}
+
+.pz-waiting-modal-header {
+  border-bottom: 0;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.pz-waiting-modal-header h3 {
+  color: var(--accent-bright);
+  font-size: 0.86rem;
+  letter-spacing: 0.11em;
+  line-height: 1.2;
+}
+
+.pz-waiting-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: calc(100svh - 88px);
+  overflow-y: auto;
+  padding: 0;
+}
+
+.pz-waiting-status {
+  align-items: center;
+  color: var(--text-bright);
+  display: flex;
+  font-size: 0.86rem;
+  font-weight: 650;
+  gap: 8px;
+  line-height: 1.25;
+}
+
+.pz-waiting-status-dot {
+  width: 6px;
+  height: 6px;
+  flex: 0 0 6px;
+}
+
+.pz-waiting-modal-card .pz-invite-qr-panel {
+  gap: 6px;
+  padding: 4px 0 0;
+}
+
+.pz-waiting-modal-card .pz-invite-qr {
+  width: min(144px, 42vw);
+  padding: 6px;
+  border-radius: 8px;
+  border-color: rgba(109, 243, 207, 0.35);
+  box-shadow: none;
+}
+
+.pz-waiting-modal-card .pz-invite-qr-caption {
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+}
+
+.pz-waiting-link-panel,
+.pz-online-lobby-panel {
+  border-top: 1px solid rgba(109, 243, 207, 0.14);
+  padding-top: 10px;
+}
+
+.pz-waiting-link-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.pz-waiting-link-field label {
+  color: var(--text-muted);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.pz-waiting-link-row {
+  display: flex;
+  gap: 6px;
+}
+
+.pz-waiting-modal-card .pz-share-url {
+  padding: 6px 8px;
+  font-size: 0.76rem;
+}
+
+.pz-waiting-modal-card .pz-online-lobby-panel {
+  gap: 8px;
+}
+
+.pz-waiting-modal-card .pz-online-guest-row {
+  border-radius: 6px;
+  font-size: 0.8rem;
+  padding: 6px 8px;
+}
+
+.pz-waiting-modal-card .pz-online-mode-grid {
+  gap: 6px;
+}
+
+.pz-waiting-modal-card .pz-online-mode {
+  border-radius: 6px;
+  font-size: 0.76rem;
+  gap: 5px;
+  min-height: 32px;
+  padding: 6px 8px;
+}
+
+.pz-waiting-modal-card .pz-online-lobby-label {
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+}
+
+.pz-waiting-modal-card .pz-online-lobby-status {
+  font-size: 0.78rem;
+}
+
+.pz-waiting-modal-card .pz-waiting-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(104px, 1fr));
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.pz-waiting-modal-card .pz-btn {
+  border-radius: 6px;
+  font-size: 0.68rem;
+  gap: 6px;
+  min-height: 32px;
+  padding: 6px 9px;
+}
+
+.pz-waiting-modal-card .pz-btn.compact {
+  min-height: 28px;
+  padding: 5px 8px;
 }
 @keyframes fadeIn {
   from { opacity: 0; }
@@ -1285,6 +1522,144 @@
 
   .pz-modal-body {
     max-height: calc(100svh - 92px);
+  }
+
+  .pz-modal-card.pz-waiting-modal-card {
+    width: min(640px, calc(100vw - 88px));
+    max-height: calc(100svh - 12px);
+    gap: 6px;
+    padding: 10px;
+  }
+
+  .pz-waiting-modal-header h3 {
+    font-size: 0.72rem;
+    letter-spacing: 0.09em;
+  }
+
+  .pz-waiting-modal-body {
+    gap: 6px;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .pz-waiting-modal-card.host .pz-waiting-modal-body {
+    display: grid;
+    grid-template-columns: 132px minmax(0, 1fr);
+    grid-template-areas:
+      "status status"
+      "qr link"
+      "qr lobby"
+      "actions actions";
+    column-gap: 14px;
+    row-gap: 7px;
+  }
+
+  .pz-waiting-status {
+    font-size: 0.72rem;
+    grid-area: status;
+  }
+
+  .pz-waiting-modal-card .pz-invite-qr-panel {
+    grid-area: qr;
+    gap: 6px;
+    justify-content: center;
+    padding: 4px 0;
+  }
+
+  .pz-waiting-modal-card .pz-invite-qr {
+    width: min(118px, 26vw);
+    padding: 5px;
+    border-radius: 7px;
+  }
+
+  .pz-waiting-modal-card .pz-invite-qr-caption {
+    font-size: 0.56rem;
+    letter-spacing: 0.05em;
+    line-height: 1.15;
+  }
+
+  .pz-waiting-link-panel {
+    grid-area: link;
+  }
+
+  .pz-waiting-link-panel,
+  .pz-online-lobby-panel {
+    padding-top: 0;
+  }
+
+  .pz-waiting-modal-card.host .pz-waiting-link-panel {
+    border-top: 0;
+  }
+
+  .pz-waiting-link-field {
+    gap: 3px;
+  }
+
+  .pz-waiting-link-field label,
+  .pz-waiting-modal-card .pz-online-lobby-label {
+    font-size: 0.56rem;
+  }
+
+  .pz-waiting-link-row {
+    gap: 4px;
+  }
+
+  .pz-waiting-modal-card .pz-share-url {
+    padding: 5px 6px;
+    font-size: 0.66rem;
+  }
+
+  .pz-waiting-modal-card .pz-online-lobby-panel {
+    grid-area: lobby;
+    gap: 5px;
+  }
+
+  .pz-waiting-modal-card.host .pz-online-lobby-panel {
+    border-top: 0;
+    padding-top: 0;
+  }
+
+  .pz-waiting-modal-card .pz-online-guest-row {
+    font-size: 0.68rem;
+    padding: 4px 6px;
+  }
+
+  .pz-waiting-modal-card .pz-online-mode-grid {
+    gap: 4px;
+  }
+
+  .pz-waiting-modal-card .pz-online-mode {
+    font-size: 0.63rem;
+    gap: 4px;
+    min-height: 26px;
+    padding: 4px 6px;
+  }
+
+  .pz-waiting-modal-card .pz-online-mode svg {
+    width: 13px;
+    height: 13px;
+  }
+
+  .pz-waiting-modal-card .pz-online-lobby-status {
+    font-size: 0.68rem;
+  }
+
+  .pz-waiting-modal-card .pz-waiting-actions {
+    grid-area: actions;
+    grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+    gap: 5px;
+  }
+
+  .pz-waiting-modal-card .pz-btn {
+    font-size: 0.58rem;
+    gap: 4px;
+    min-height: 27px;
+    padding: 4px 7px;
+  }
+
+  .pz-waiting-modal-card .pz-btn.compact {
+    min-height: 24px;
+    padding: 3px 6px;
   }
 
   .pz-join-form {
