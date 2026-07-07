@@ -38,6 +38,7 @@ export function Board({
     status,
     online,
     vsBot,
+    opponentCompanion,
     connection,
     act,
     reset,
@@ -118,7 +119,7 @@ export function Board({
             const label = (online || vsBot)
               ? seat === mySeat
                 ? t('you')
-                : t('opponent')
+                : (opponentCompanion?.name ?? t('opponent'))
               : t('player_seat', { player: seat + 1 });
 
             const isYou = seat === mySeat;
@@ -132,7 +133,12 @@ export function Board({
                 ) : null}
                 <div className="pz-player-content">
                   <div className="pz-player-head pz-mobile-rail pz-board-rail">
-                    <span className="pz-pname">{label}</span>
+                    <span className="pz-pname">
+                      {!isYou && opponentCompanion ? (
+                        <img className="pz-companion-avatar" src={opponentCompanion.portrait} alt="" />
+                      ) : null}
+                      {label}
+                    </span>
                     <span className={`pz-total ${total > 20 ? 'bust' : ''}`}>{total}</span>
                     <div className="pz-pips">
                       {[0, 1, 2].map((i) => (

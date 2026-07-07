@@ -1,12 +1,14 @@
+import { getCompanion } from '../../companions/companions';
 import type { CardPool } from '../../engine';
 import { useI18n } from '../../net/useI18n';
 import { Board } from '../../ui/Board';
 import { useSinglePlayerMatch } from '../../ui/useSinglePlayerMatch';
 
 
-export function QuickGame({ pool, onLeave }: { pool: CardPool; onLeave: () => void }) {
+export function QuickGame({ pool, companionId, onLeave }: { pool: CardPool; companionId?: string; onLeave: () => void }) {
   const { t } = useI18n();
-  const controller = useSinglePlayerMatch({ pool });
+  const companion = getCompanion(companionId);
+  const controller = useSinglePlayerMatch({ pool, companion });
 
   const endSlot = (
     <>

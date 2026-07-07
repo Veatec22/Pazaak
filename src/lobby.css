@@ -1295,6 +1295,103 @@
   box-shadow: 0 0 8px rgba(232, 200, 74, 0.6), inset 0 0 3px rgba(255, 255, 255, 0.25);
 }
 
+.pz-opponent-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(56px, 68px));
+  justify-content: center;
+  gap: clamp(8px, 1.6vw, 14px);
+  width: min(480px, 92vw);
+}
+
+.pz-opponent-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+.pz-opponent-tile-art {
+  aspect-ratio: 1 / 1;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid var(--border);
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+}
+
+.pz-opponent-tile-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pz-opponent-tile-random {
+  color: var(--text-mute);
+}
+
+.pz-opponent-tile:hover .pz-opponent-tile-art,
+.pz-opponent-tile:focus-visible .pz-opponent-tile-art {
+  border-color: var(--gold);
+  box-shadow: 0 0 16px rgba(232, 200, 74, 0.4);
+  transform: scale(1.03);
+}
+
+.pz-opponent-tile:active .pz-opponent-tile-art {
+  transform: scale(0.98);
+}
+
+.pz-opponent-tile-name {
+  margin-top: 4px;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--text-mute);
+}
+
+.pz-opponent-tile:hover .pz-opponent-tile-name,
+.pz-opponent-tile:focus-visible .pz-opponent-tile-name {
+  color: var(--gold-bright);
+}
+
+.pz-opponent-select .pz-lobby-content {
+  flex: 1 1 auto;
+  padding-top: clamp(8px, 2vh, 20px);
+  overflow: hidden;
+}
+
+.pz-opponent-select .pz-tag {
+  flex: 0 0 auto;
+}
+
+.pz-opponent-select .pz-lobby-content > .pz-btn {
+  flex: 0 0 auto;
+  margin-top: 4px;
+}
+
+.pz-opponent-fit {
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.pz-opponent-fit .pz-opponent-grid {
+  flex: none;
+}
+
 @media (orientation: landscape) and (max-height: 520px) {
   .pz-lobby {
     padding-left: 54px;
