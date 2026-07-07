@@ -6,7 +6,7 @@ import { CampaignScreen } from './components/singleplayer/CampaignScreen';
 import { OpponentSelectScreen } from './components/singleplayer/OpponentSelectScreen';
 import { QuickGame } from './components/singleplayer/QuickGame';
 import { QuickMatchSetup } from './components/singleplayer/QuickMatchSetup';
-import { MainMenu, MultiplayerMenu, SinglePlayerMenu, WaitingRoom } from './Lobby';
+import { DeckBuilderScreen, MainMenu, MultiplayerMenu, SinglePlayerMenu, WaitingRoom } from './Lobby';
 import { MusicProvider } from './music/MusicProvider';
 import { getSavedNickname, useLobbyAnnouncer } from './net/useLobby';
 import { useOnlineMatch } from './net/useOnlineMatch';
@@ -123,8 +123,11 @@ export default function App() {
       <MainMenu
         onGoSinglePlayer={() => navigate({ mode: 'single-menu' })}
         onGoMultiplayer={() => navigate({ mode: 'multi-menu' })}
+        onGoDeckBuilder={() => navigate({ mode: 'deck-builder' })}
       />
     );
+  } else if (route.mode === 'deck-builder') {
+    content = <DeckBuilderScreen onLeave={navigateBackOneLevel} />;
   } else if (route.mode === 'single-menu') {
     content = (
       <SinglePlayerMenu

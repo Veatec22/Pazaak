@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import type { Companion } from '../companions/companions';
-import { aiDeck, CAMPAIGN_LENGTH, type CardPool, chooseBotAction, deckFromPool, MatchSession, type PazaakEvent, PazaakGame, SeededRng } from '../engine';
+import { sideDeckForPool } from '../deckBuilder/customDeck';
+import { aiDeck, type BuiltInCardPool, CAMPAIGN_LENGTH, type CardPool, chooseBotAction, deckFromPool, MatchSession, type PazaakEvent, PazaakGame, SeededRng } from '../engine';
 import type { ActionDict, SeatState } from '../engine';
 import { playCompanionLine, primeCompanionVoice } from './companionVoice';
 import type { MatchController } from './controller';
@@ -98,8 +99,11 @@ export function useSinglePlayerMatch(opts: Partial<SinglePlayerOptions> = {}): M
     const rng = new SeededRng((Math.random() * 1e9) >>> 0);
     const pool = optsRef.current.pool ?? 'mix';
     const companion = optsRef.current.companion;
-    const opponentDeck = companion ? deckFromPool(rng, pool) : aiDeck(optsRef.current.tierIndex ?? rng.randint(0, CAMPAIGN_LENGTH - 1));
-    const game = new PazaakGame(deckFromPool(rng, pool), opponentDeck, { rng });
+    const opponentPool: BuiltInCardPool = pool === 'builder' ? 'mix' : pool;
+    const opponentDeck = companion
+      ? deckFromPool(rng, opponentPool)
+      : aiDeck(optsRef.current.tierIndex ?? rng.randint(0, CAMPAIGN_LENGTH - 1));
+    const game = new PazaakGame(sideDeckForPool(rng, pool), opponentDeck, { rng });
     const session = new MatchSession(game);
     sessionRef.current = session;
     resultFiredRef.current = false;

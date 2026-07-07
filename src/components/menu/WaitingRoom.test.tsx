@@ -76,10 +76,10 @@ describe('WaitingRoom', () => {
   });
 
   it('lets the host choose a mode but blocks start until the guest is ready', () => {
-    const view = renderWaitingRoom(hostLobby());
+    const view = renderWaitingRoom(hostLobby({ mode: 'builder' }));
 
-    expect(view).toHaveTextContent('Mixed');
-    expect(view.querySelector('button[aria-pressed="true"]')).toHaveTextContent('Mixed');
+    expect(view).toHaveTextContent('Builder');
+    expect(view.querySelector('button[aria-pressed="true"]')).toHaveTextContent('Builder');
     expect(view).toHaveTextContent('Mission');
     expect(view).toHaveTextContent('Guest is not ready');
     expect(view).toHaveTextContent('Kick');

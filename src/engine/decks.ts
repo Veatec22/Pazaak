@@ -2,25 +2,26 @@
 import { card, FULL_COLLECTION, SIDE_DECK_SIZE, type SideCard } from './cards';
 import type { Rng } from './rng';
 
-export type CardPool = 'classic' | 'flip' | 'mix';
+export type BuiltInCardPool = 'classic' | 'flip' | 'mix';
+export type CardPool = BuiltInCardPool | 'builder';
 export type Difficulty = 'easy' | 'normal' | 'hard' | 'hardcore';
 
 const byFamily = (families: string[]): SideCard[] => FULL_COLLECTION.filter((c) => families.includes(c.family));
 
-export const POOLS: Record<CardPool, readonly SideCard[]> = {
+export const POOLS: Record<BuiltInCardPool, readonly SideCard[]> = {
   classic: byFamily(['plus', 'minus']),
   flip: byFamily(['flip']),
   mix: byFamily(['plus', 'minus', 'flip']),
 };
 
-export const DIFFICULTY_POOL: Record<Difficulty, CardPool> = {
+export const DIFFICULTY_POOL: Record<Difficulty, BuiltInCardPool> = {
   easy: 'flip',
   normal: 'mix',
   hard: 'classic',
   hardcore: 'classic',
 };
 
-export function deckFromPool(rng: Rng, pool: CardPool): SideCard[] {
+export function deckFromPool(rng: Rng, pool: BuiltInCardPool): SideCard[] {
   const src = POOLS[pool];
   return Array.from({ length: SIDE_DECK_SIZE }, () => src[rng.randint(0, src.length - 1)]);
 }
