@@ -35,7 +35,10 @@ function ensureContext(): AudioContext | null {
 
 function loadBuffer(url: string): Promise<AudioBuffer | null> {
   const cached = buffers.get(url);
-  if (cached) return Promise.resolve(cached);
+  if (cached) {
+    ensureContext();
+    return Promise.resolve(cached);
+  }
   const inFlight = pending.get(url);
   if (inFlight) return inFlight;
 
