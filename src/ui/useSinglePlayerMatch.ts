@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { aiDeck, CAMPAIGN_LENGTH, type CardPool, chooseBotAction, deckFromPool, MatchSession, PazaakGame, SeededRng } from '../engine';
+import { aiDeck, CAMPAIGN_LENGTH, type CardPool, chooseBotAction, MatchSession, PazaakGame, SeededRng } from '../engine';
+import { sideDeckForPool } from '../deckBuilder/customDeck';
 import type { ActionDict, SeatState } from '../engine';
 import type { MatchController } from './controller';
 import { useReplay } from './replay';
@@ -83,7 +84,7 @@ export function useSinglePlayerMatch(opts: Partial<SinglePlayerOptions> = {}): M
     const rng = new SeededRng((Math.random() * 1e9) >>> 0);
     const pool = optsRef.current.pool ?? 'mix';
     const tier = optsRef.current.tierIndex ?? rng.randint(0, CAMPAIGN_LENGTH - 1);
-    const game = new PazaakGame(deckFromPool(rng, pool), aiDeck(tier), { rng });
+    const game = new PazaakGame(sideDeckForPool(rng, pool), aiDeck(tier), { rng });
     const session = new MatchSession(game);
     sessionRef.current = session;
     resultFiredRef.current = false;
