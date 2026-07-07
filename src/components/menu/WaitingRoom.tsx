@@ -186,6 +186,7 @@ function OnlineModeButton({
       disabled={disabled}
       onClick={onClick}
       type="button"
+      aria-pressed={active}
     >
       <Icon size={15} />
       {label}
