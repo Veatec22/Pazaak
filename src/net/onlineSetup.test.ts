@@ -20,4 +20,18 @@ describe('resolveOnlineSideDecks', () => {
     expect(hostDeck.every((c) => c.family === 'flip')).toBe(true);
     expect(guestDeck.every((c) => c.family === 'flip')).toBe(true);
   });
+
+  it('falls back to mixed instead of throwing when a peer sends a malformed custom deck', () => {
+    const hostCodes = Array.from({ length: SIDE_DECK_SIZE }, () => '±6');
+    const wrongLength = ['+1', '+2'];
+    const invalidCode = Array.from({ length: SIDE_DECK_SIZE }, () => 'not-a-card');
+
+    expect(() => resolveOnlineSideDecks(new SeededRng(4), 'builder', hostCodes, wrongLength)).not.toThrow();
+    const { guestDeck: fromWrongLength } = resolveOnlineSideDecks(new SeededRng(4), 'builder', hostCodes, wrongLength);
+    expect(fromWrongLength).toHaveLength(SIDE_DECK_SIZE);
+
+    expect(() => resolveOnlineSideDecks(new SeededRng(5), 'builder', hostCodes, invalidCode)).not.toThrow();
+    const { guestDeck: fromInvalidCode } = resolveOnlineSideDecks(new SeededRng(5), 'builder', hostCodes, invalidCode);
+    expect(fromInvalidCode).toHaveLength(SIDE_DECK_SIZE);
+  });
 });

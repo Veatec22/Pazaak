@@ -31,9 +31,11 @@ export function deckFromCodes(codes: readonly string[]): SideCard[] {
   return normalized.map(card);
 }
 
-export function sideDeckForPool(rng: Rng, pool: CardPool, customCodes = loadCustomDeckCodes()): SideCard[] {
+export function sideDeckForPool(rng: Rng, pool: CardPool, customCodes?: string[] | null): SideCard[] {
   if (pool === 'builder') {
-    return customCodes ? deckFromCodes(customCodes) : deckFromPool(rng, 'mix');
+    const codes = customCodes ?? loadCustomDeckCodes();
+    const normalized = codes ? normalizeDeckCodes(codes) : null;
+    return normalized ? normalized.map(card) : deckFromPool(rng, 'mix');
   }
   return deckFromPool(rng, pool as BuiltInCardPool);
 }

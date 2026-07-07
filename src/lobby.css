@@ -159,6 +159,7 @@
 .pz-builder-shell {
   --builder-card-w: clamp(50px, 5.1vw, 62px);
   --builder-selected-w: clamp(43px, 4.2vw, 50px);
+
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(180px, 0.34fr);
   grid-template-rows: auto auto auto;
@@ -1993,6 +1994,7 @@
   .pz-builder-shell {
     --builder-card-w: clamp(42px, 13vw, 54px);
     --builder-selected-w: clamp(34px, 9vw, 44px);
+
     grid-template-columns: 1fr;
     grid-template-rows: auto auto minmax(0, 1fr) auto;
     grid-template-areas:
@@ -2098,6 +2100,7 @@
   .pz-builder-shell {
     --builder-card-w: clamp(48px, 16vh, 62px);
     --builder-selected-w: clamp(31px, 8.2vh, 39px);
+
     grid-template-columns: minmax(0, 1fr) minmax(168px, 0.36fr);
     grid-template-rows: auto minmax(0, 1fr) auto;
     grid-template-areas:
@@ -2157,6 +2160,7 @@
   .pz-builder-shell {
     --builder-card-w: clamp(45px, 16vh, 56px);
     --builder-selected-w: clamp(27px, 8vh, 32px);
+
     grid-template-columns: minmax(0, 1fr) minmax(132px, 0.32fr);
     width: min(640px, calc(100vw - 78px));
     gap: 4px;
