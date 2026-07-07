@@ -2,6 +2,7 @@ import type { CardPool, Difficulty } from './engine';
 
 export type Route =
   | { mode: 'main-menu' }
+  | { mode: 'deck-builder' }
   | { mode: 'single-menu' }
   | { mode: 'quick-setup' }
   | { mode: 'quick-game'; pool: CardPool }
@@ -16,7 +17,7 @@ export type BackIntent =
   | { type: 'navigate'; target: Route }
   | { type: 'forfeit'; target: Route };
 
-const POOLS = ['classic', 'flip', 'mix'] as const satisfies readonly CardPool[];
+const POOLS = ['classic', 'flip', 'mix', 'builder'] as const satisfies readonly CardPool[];
 const DIFFICULTIES = ['easy', 'normal', 'hard', 'hardcore'] as const satisfies readonly Difficulty[];
 
 export const hostKey = (id: string) => `pz-host-${id}`;
@@ -29,6 +30,7 @@ export function parseRouteFromHash(hash: string, isHostForRoom: (roomId: string)
   }
   if (hash === '#multiplayer') return { mode: 'multi-menu' };
   if (hash === '#singleplayer') return { mode: 'single-menu' };
+  if (hash === '#deck-builder') return { mode: 'deck-builder' };
   if (hash === '#hotseat') return { mode: 'hotseat' };
 
   const quick = /^#quick(?:=([a-z]+))?$/.exec(hash);
@@ -56,6 +58,8 @@ export function routeToHash(route: Route): string {
       return '';
     case 'single-menu':
       return '#singleplayer';
+    case 'deck-builder':
+      return '#deck-builder';
     case 'quick-setup':
       return '#quick';
     case 'quick-game':
@@ -95,6 +99,8 @@ export function parentRouteForRoute(route: Route): Route | null {
   switch (route.mode) {
     case 'main-menu':
       return null;
+    case 'deck-builder':
+      return { mode: 'main-menu' };
     case 'single-menu':
     case 'multi-menu':
       return { mode: 'main-menu' };

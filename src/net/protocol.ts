@@ -31,7 +31,7 @@ export type SyncMessage =
 export type ActMessage =
   | { kind: 'action'; action: ActionDict }
   | { kind: 'hello'; nickname: string }
-  | { kind: 'ready'; ready: boolean; nickname: string };
+  | { kind: 'ready'; ready: boolean; customDeck: string[] | null; nickname: string };
 
 
 export interface LobbyAnnounceMessage {

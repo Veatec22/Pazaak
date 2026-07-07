@@ -1,5 +1,5 @@
 import type { ComponentType } from 'react';
-import { ArrowLeft, ArrowLeftRight, Copy, Landmark, Play, Share2, UserX } from 'lucide-react';
+import { ArrowLeft, ArrowLeftRight, Copy, Landmark, Play, Share2, SwatchBook, UserX } from 'lucide-react';
 import { ReactQRCode } from '@lglab/react-qr-code';
 
 import type { CardPool } from '../../engine';
@@ -11,11 +11,12 @@ import { useCopyToClipboard } from '../../ui/clipboard';
 const QR_ICON = `${import.meta.env.BASE_URL}brand/icon-192.png`;
 const QR_SIZE = 144;
 const QR_ICON_SIZE = 30;
-const ONLINE_POOLS: CardPool[] = ['classic', 'flip', 'mix'];
+const ONLINE_POOLS: CardPool[] = ['classic', 'flip', 'mix', 'builder'];
 const ONLINE_POOL_ICONS = {
   classic: Landmark,
   flip: ArrowLeftRight,
   mix: MixedPoolIcon,
+  builder: SwatchBook,
 } satisfies Record<CardPool, ComponentType<{ size?: number }>>;
 
 type OnlineLobby = NonNullable<MatchController['onlineLobby']>;

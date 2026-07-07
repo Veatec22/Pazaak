@@ -14,6 +14,7 @@ describe('navigation route rules', () => {
   it.each([
     [{ mode: 'single-menu' }, { mode: 'main-menu' }],
     [{ mode: 'multi-menu' }, { mode: 'main-menu' }],
+    [{ mode: 'deck-builder' }, { mode: 'main-menu' }],
     [{ mode: 'quick-setup' }, { mode: 'single-menu' }],
     [{ mode: 'campaign' }, { mode: 'single-menu' }],
   ] satisfies Array<[Route, Route]>)('moves back from %o to its menu parent %o', (route, parent) => {
@@ -40,8 +41,10 @@ describe('navigation route rules', () => {
   it.each([
     ['#singleplayer', { mode: 'single-menu' }],
     ['#multiplayer', { mode: 'multi-menu' }],
+    ['#deck-builder', { mode: 'deck-builder' }],
     ['#quick', { mode: 'quick-setup' }],
     ['#quick=flip', { mode: 'quick-game', pool: 'flip' }],
+    ['#quick=builder', { mode: 'quick-game', pool: 'builder' }],
     ['#campaign=normal', { mode: 'campaign-game', difficulty: 'normal' }],
     ['#room=abc123', { mode: 'online', roomId: 'abc123', isHost: true }],
   ] satisfies Array<[string, Route]>)('parses %s', (hash, route) => {
@@ -52,8 +55,10 @@ describe('navigation route rules', () => {
     [{ mode: 'main-menu' }, ''],
     [{ mode: 'single-menu' }, '#singleplayer'],
     [{ mode: 'multi-menu' }, '#multiplayer'],
+    [{ mode: 'deck-builder' }, '#deck-builder'],
     [{ mode: 'quick-setup' }, '#quick'],
     [{ mode: 'quick-game', pool: 'mix' }, '#quick=mix'],
+    [{ mode: 'quick-game', pool: 'builder' }, '#quick=builder'],
     [{ mode: 'campaign' }, '#campaign'],
     [{ mode: 'campaign-game', difficulty: 'hardcore' }, '#campaign=hardcore'],
     [{ mode: 'hotseat' }, '#hotseat'],

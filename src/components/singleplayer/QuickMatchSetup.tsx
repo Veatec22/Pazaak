@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowLeftRight, Landmark } from 'lucide-react';
+import { ArrowLeft, ArrowLeftRight, Landmark, SwatchBook } from 'lucide-react';
 
 import type { CardPool } from '../../engine';
 import { useI18n } from '../../net/useI18n';
@@ -16,6 +16,7 @@ export function QuickMatchSetup({ onPick, onLeave }: { onPick: (pool: CardPool) 
         <MenuButton icon={ArrowLeftRight} title={t('pool_flip')} primary onClick={() => onPick('flip')} />
         <MenuButton icon={MixedPoolIcon} title={t('pool_mix')} primary onClick={() => onPick('mix')} />
         <MenuButton icon={Landmark} title={t('pool_classic')} primary onClick={() => onPick('classic')} />
+        <MenuButton icon={SwatchBook} title={t('pool_builder')} primary onClick={() => onPick('builder')} />
         <MenuButton icon={ArrowLeft} title={t('btn_back')} onClick={onLeave} />
       </div>
     </MenuScreen>

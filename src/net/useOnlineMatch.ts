@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { deckFromPool, MatchSession, PazaakGame, SeededRng } from '../engine';
+import { MatchSession, PazaakGame, SeededRng } from '../engine';
 import type { ActionDict, CardPool, Seat, SeatState } from '../engine';
+import { loadCustomDeckCodes } from '../deckBuilder/customDeck';
 import type { MatchController } from '../ui/controller';
 import { useReplay } from '../ui/replay';
 import { playPazaakSound, primePazaakSounds } from '../ui/sounds';
 import { actChannel, type ActMessage, createRoom, type Room, syncChannel, type SyncMessage } from './protocol';
+import { resolveOnlineSideDecks } from './onlineSetup';
 import { getSavedNickname } from './useLobby';
 
 const HOST_SEAT: Seat = 0;
@@ -44,6 +46,7 @@ export function useOnlineMatch(roomId: string, isHost: boolean): MatchController
   const chainRef = useRef<Promise<void>>(Promise.resolve());
   const lobbyModeRef = useRef<CardPool>('mix');
   const guestReadyRef = useRef(false);
+  const guestCustomDeckRef = useRef<string[] | null>(null);
 
   const putView = useCallback((v: SeatState | null) => {
     viewRef.current = v;
@@ -91,6 +94,7 @@ export function useOnlineMatch(roomId: string, isHost: boolean): MatchController
   const clearGuestLobbyState = useCallback(() => {
     peerRef.current = null;
     guestReadyRef.current = false;
+    guestCustomDeckRef.current = null;
     setGuestName(null);
     setGuestReadyState(false);
   }, []);
@@ -125,7 +129,13 @@ export function useOnlineMatch(roomId: string, isHost: boolean): MatchController
   const startHostGame = useCallback(() => {
     if (!isHost || !peerRef.current || !guestReadyRef.current) return;
     const rng = new SeededRng((Math.random() * 1e9) >>> 0);
-    const game = new PazaakGame(deckFromPool(rng, lobbyModeRef.current), deckFromPool(rng, lobbyModeRef.current), { rng });
+    const { hostDeck, guestDeck } = resolveOnlineSideDecks(
+      rng,
+      lobbyModeRef.current,
+      loadCustomDeckCodes(),
+      guestCustomDeckRef.current,
+    );
+    const game = new PazaakGame(hostDeck, guestDeck, { rng });
     const s = new MatchSession(game);
     sessionRef.current = s;
     void (async () => {
@@ -213,6 +223,7 @@ export function useOnlineMatch(roomId: string, isHost: boolean): MatchController
         if (m.kind === 'ready') {
           setGuestName(m.nickname);
           guestReadyRef.current = m.ready;
+          guestCustomDeckRef.current = m.customDeck;
           setGuestReadyState(m.ready);
           publishLobby();
           return;
@@ -276,7 +287,7 @@ export function useOnlineMatch(roomId: string, isHost: boolean): MatchController
     if (isHost || sessionRef.current) return;
     const next = !ready;
     setReady(next);
-    sendActRef.current?.({ kind: 'ready', ready: next, nickname: getSavedNickname() });
+    sendActRef.current?.({ kind: 'ready', ready: next, customDeck: loadCustomDeckCodes(), nickname: getSavedNickname() });
   }, [isHost, ready]);
 
   const reset = useCallback(() => {
