@@ -1,6 +1,6 @@
 import { joinRoom } from 'trystero/torrent';
 
-import type { ActionDict, PazaakEvent, SeatState } from '../engine';
+import type { ActionDict, CardPool, PazaakEvent, SeatState } from '../engine';
 
 
 const APP_ID = 'pazaak-1v1-hk47';
@@ -20,15 +20,18 @@ const RELAY_URLS: string[] | undefined = undefined;
 
 
 export type SyncMessage =
+  | { kind: 'lobby'; mode: CardPool; guestReady: boolean }
+  | { kind: 'kicked' }
   | { kind: 'start'; events: PazaakEvent[]; state: SeatState }
   | { kind: 'events'; events: PazaakEvent[]; state: SeatState }
 
   | { kind: 'resume'; state: SeatState };
 
 
-export interface ActMessage {
-  action: ActionDict;
-}
+export type ActMessage =
+  | { kind: 'action'; action: ActionDict }
+  | { kind: 'hello'; nickname: string }
+  | { kind: 'ready'; ready: boolean; nickname: string };
 
 
 export interface LobbyAnnounceMessage {

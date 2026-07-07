@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-import type { ActionDict, Seat, SeatState } from '../engine';
+import type { ActionDict, CardPool, Seat, SeatState } from '../engine';
 
 export interface DisplayCard {
   key: string;
@@ -56,6 +56,22 @@ export interface MatchController {
   handSwapAnimation?: boolean;
 
   connection?: 'connecting' | 'connected' | 'disconnected';
+
+  onlineLobby?: {
+    isHost: boolean;
+    connected: boolean;
+    mode: CardPool;
+    guestName: string | null;
+    guestReady: boolean;
+    ready: boolean;
+    kicked: boolean;
+    canStart: boolean;
+    setMode: (mode: CardPool) => void;
+    toggleReady: () => void;
+    kick?: () => void;
+    start: () => void;
+  };
+
   act: (action: ActionDict) => void;
 
   reset?: () => void;

@@ -192,8 +192,8 @@ function OnlineGame({ roomId, isHost, onLeave }: { roomId: string; isHost: boole
   return (
     <>
       <Board controller={controller} onForfeit={onLeave} roomId={roomId} isHost={isHost} />
-      {isHost && controller.connection === 'connecting' ? (
-        <WaitingRoom roomId={roomId} onLeave={onLeave} />
+      {controller.onlineLobby && !controller.view && !controller.finished ? (
+        <WaitingRoom roomId={roomId} onLeave={onLeave} lobby={controller.onlineLobby} />
       ) : null}
     </>
   );
