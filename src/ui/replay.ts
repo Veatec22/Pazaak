@@ -42,7 +42,7 @@ function snapshotToDisplay(state: SeatState, mySeat: Seat): Display {
 
 
 
-export function useReplay(mySeat: Seat | null) {
+export function useReplay(mySeat: Seat | null, onEvent?: (ev: PazaakEvent) => void) {
   const [display, setDisplay] = useState<Display>(EMPTY_DISPLAY);
   const [banner, setBanner] = useState<Banner | null>(null);
   const [finished, setFinished] = useState(false);
@@ -98,6 +98,7 @@ export function useReplay(mySeat: Seat | null) {
             else if (mySeat == null) playPazaakSound('winset');
             else playPazaakSound(iWon ? 'winset' : 'loseset');
             setBanner({ kind: 'set', text: setBannerText(t, ev.winner, ev.totals, mySeat, ev.reason) });
+            onEvent?.(ev);
             await sleep(1500);
             setDisplay((d) => ({
               tables: [[], []],
@@ -118,13 +119,14 @@ export function useReplay(mySeat: Seat | null) {
               text: matchBannerText(t, ev.winner, mySeat),
               tone: mySeat != null && !iWon ? 'lose' : 'win',
             });
+            onEvent?.(ev);
             setFinished(true);
             break;
           }
         }
       }
     },
-    [appendCard, mySeat, t],
+    [appendCard, mySeat, t, onEvent],
   );
 
 

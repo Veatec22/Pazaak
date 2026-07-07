@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { CampaignGame } from './components/singleplayer/CampaignGame';
 import { CampaignScreen } from './components/singleplayer/CampaignScreen';
+import { OpponentSelectScreen } from './components/singleplayer/OpponentSelectScreen';
 import { QuickGame } from './components/singleplayer/QuickGame';
 import { QuickMatchSetup } from './components/singleplayer/QuickMatchSetup';
 import { DeckBuilderScreen, MainMenu, MultiplayerMenu, SinglePlayerMenu, WaitingRoom } from './Lobby';
@@ -138,12 +139,20 @@ export default function App() {
   } else if (route.mode === 'quick-setup') {
     content = (
       <QuickMatchSetup
-        onPick={(pool) => navigate({ mode: 'quick-game', pool })}
+        onPick={(pool) => navigate({ mode: 'quick-opponent', pool })}
+        onLeave={navigateBackOneLevel}
+      />
+    );
+  } else if (route.mode === 'quick-opponent') {
+    content = (
+      <OpponentSelectScreen
+        pool={route.pool}
+        onPick={(companion) => navigate({ mode: 'quick-game', pool: route.pool, companion })}
         onLeave={navigateBackOneLevel}
       />
     );
   } else if (route.mode === 'quick-game') {
-    content = <QuickGame pool={route.pool} onLeave={leaveCurrentGame} />;
+    content = <QuickGame pool={route.pool} companionId={route.companion} onLeave={leaveCurrentGame} />;
   } else if (route.mode === 'campaign') {
     content = (
       <CampaignScreen

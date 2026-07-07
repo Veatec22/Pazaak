@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { aiDeck, CAMPAIGN_LENGTH, type CardPool, chooseBotAction, MatchSession, PazaakGame, SeededRng } from '../engine';
+import type { Companion } from '../companions/companions';
 import { sideDeckForPool } from '../deckBuilder/customDeck';
+import { aiDeck, type BuiltInCardPool, CAMPAIGN_LENGTH, type CardPool, chooseBotAction, deckFromPool, MatchSession, type PazaakEvent, PazaakGame, SeededRng } from '../engine';
 import type { ActionDict, SeatState } from '../engine';
+import { playCompanionLine, primeCompanionVoice } from './companionVoice';
 import type { MatchController } from './controller';
 import { useReplay } from './replay';
 import { playPazaakSound, primePazaakSounds } from './sounds';
@@ -13,20 +15,33 @@ const DEAL_PAUSE_MS = 650;
 export interface SinglePlayerOptions {
     pool: CardPool;
     tierIndex: number;
+    companion: Companion;
     onResult: (won: boolean) => void;
 }
 
 export function useSinglePlayerMatch(opts: Partial<SinglePlayerOptions> = {}): MatchController {
 
-  const { display, banner, finished, replay, resetDisplay } = useReplay(0);
+  const optsRef = useRef(opts);
+  optsRef.current = opts;
+
+  const announceCompanion = useCallback((ev: PazaakEvent) => {
+    const companion = optsRef.current.companion;
+    if (!companion) return;
+    if (ev.type === 'set_over' && ev.winner != null) {
+      const setsWon = sessionRef.current?.game.players[ev.winner].setsWon ?? 1;
+      playCompanionLine(companion, ev.winner === 0 ? 'playerWonRound' : 'playerLostRound', setsWon - 1);
+    } else if (ev.type === 'match_over') {
+      playCompanionLine(companion, ev.winner === 0 ? 'playerWonGame' : 'playerLostGame');
+    }
+  }, []);
+
+  const { display, banner, finished, replay, resetDisplay } = useReplay(0, announceCompanion);
   const [view, setView] = useState<SeatState | null>(null);
   const [busy, setBusy] = useState(true);
 
   const sessionRef = useRef<MatchSession | null>(null);
   const startedRef = useRef(false);
   const botTimeoutRef = useRef<number | null>(null);
-  const optsRef = useRef(opts);
-  optsRef.current = opts;
   const resultFiredRef = useRef(false);
   const settleRef = useRef<() => void>(() => {});
 
@@ -83,8 +98,12 @@ export function useSinglePlayerMatch(opts: Partial<SinglePlayerOptions> = {}): M
     }
     const rng = new SeededRng((Math.random() * 1e9) >>> 0);
     const pool = optsRef.current.pool ?? 'mix';
-    const tier = optsRef.current.tierIndex ?? rng.randint(0, CAMPAIGN_LENGTH - 1);
-    const game = new PazaakGame(sideDeckForPool(rng, pool), aiDeck(tier), { rng });
+    const companion = optsRef.current.companion;
+    const opponentPool: BuiltInCardPool = pool === 'builder' ? 'mix' : pool;
+    const opponentDeck = companion
+      ? deckFromPool(rng, opponentPool)
+      : aiDeck(optsRef.current.tierIndex ?? rng.randint(0, CAMPAIGN_LENGTH - 1));
+    const game = new PazaakGame(sideDeckForPool(rng, pool), opponentDeck, { rng });
     const session = new MatchSession(game);
     sessionRef.current = session;
     resultFiredRef.current = false;
@@ -92,6 +111,7 @@ export function useSinglePlayerMatch(opts: Partial<SinglePlayerOptions> = {}): M
     resetDisplay();
     setBusy(true);
     setView(session.stateFor(0));
+    if (companion) playCompanionLine(companion, 'startGame');
     await new Promise<void>((r) => setTimeout(r, DEAL_PAUSE_MS));
     await replay(session.openingEvents);
     settle();
@@ -101,6 +121,7 @@ export function useSinglePlayerMatch(opts: Partial<SinglePlayerOptions> = {}): M
     if (startedRef.current) return;
     startedRef.current = true;
     primePazaakSounds();
+    if (optsRef.current.companion) primeCompanionVoice(optsRef.current.companion);
     void start();
 
     return () => {
@@ -129,6 +150,7 @@ export function useSinglePlayerMatch(opts: Partial<SinglePlayerOptions> = {}): M
   return {
     display,
     view,
+    opponentCompanion: opts.companion,
     mySeat: 0,
     activeSeat: finished ? null : (sessionRef.current?.current ?? 0),
     banner,

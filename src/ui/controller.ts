@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 
+import type { Companion } from '../companions/companions';
 import type { ActionDict, CardPool, Seat, SeatState } from '../engine';
 
 export interface DisplayCard {
@@ -50,6 +51,8 @@ export interface MatchController {
   online: boolean;
 
   vsBot?: boolean;
+
+  opponentCompanion?: Companion;
 
   handDealAnimation?: boolean;
 

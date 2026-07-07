@@ -5,7 +5,8 @@ export type Route =
   | { mode: 'deck-builder' }
   | { mode: 'single-menu' }
   | { mode: 'quick-setup' }
-  | { mode: 'quick-game'; pool: CardPool }
+  | { mode: 'quick-opponent'; pool: CardPool }
+  | { mode: 'quick-game'; pool: CardPool; companion?: string }
   | { mode: 'campaign' }
   | { mode: 'campaign-game'; difficulty: Difficulty }
   | { mode: 'multi-menu' }
@@ -33,10 +34,17 @@ export function parseRouteFromHash(hash: string, isHostForRoom: (roomId: string)
   if (hash === '#deck-builder') return { mode: 'deck-builder' };
   if (hash === '#hotseat') return { mode: 'hotseat' };
 
-  const quick = /^#quick(?:=([a-z]+))?$/.exec(hash);
+  const quickOpponent = /^#quick-opponent=([a-z]+)$/.exec(hash);
+  if (quickOpponent) {
+    const pool = quickOpponent[1];
+    return isCardPool(pool) ? { mode: 'quick-opponent', pool } : { mode: 'quick-setup' };
+  }
+
+  const quick = /^#quick(?:=([a-z]+))?(?:&companion=([a-z0-9-]+))?$/.exec(hash);
   if (quick) {
     const pool = quick[1];
-    return isCardPool(pool) ? { mode: 'quick-game', pool } : { mode: 'quick-setup' };
+    const companion = quick[2];
+    return isCardPool(pool) ? { mode: 'quick-game', pool, ...(companion ? { companion } : {}) } : { mode: 'quick-setup' };
   }
 
   const campaign = /^#campaign(?:=([a-z]+))?$/.exec(hash);
@@ -62,8 +70,10 @@ export function routeToHash(route: Route): string {
       return '#deck-builder';
     case 'quick-setup':
       return '#quick';
+    case 'quick-opponent':
+      return `#quick-opponent=${route.pool}`;
     case 'quick-game':
-      return `#quick=${route.pool}`;
+      return `#quick=${route.pool}${route.companion ? `&companion=${route.companion}` : ''}`;
     case 'campaign':
       return '#campaign';
     case 'campaign-game':
@@ -105,8 +115,11 @@ export function parentRouteForRoute(route: Route): Route | null {
     case 'multi-menu':
       return { mode: 'main-menu' };
     case 'quick-setup':
-    case 'quick-game':
       return { mode: 'single-menu' };
+    case 'quick-opponent':
+      return { mode: 'quick-setup' };
+    case 'quick-game':
+      return { mode: 'quick-opponent', pool: route.pool };
     case 'campaign':
       return { mode: 'single-menu' };
     case 'campaign-game':
