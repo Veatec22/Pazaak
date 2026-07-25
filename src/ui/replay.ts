@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 
-import type { PazaakEvent, Seat, SeatState, TableCardTuple } from '../engine';
+import type { PazaakEvent, Seat, SeatState, SetReason, TableCardTuple } from '../engine';
 import { type Banner, type Display, type DisplayCard, EMPTY_DISPLAY } from './controller';
 import { playPazaakSound } from './sounds';
 import { useI18n } from '../net/useI18n';
@@ -142,17 +142,18 @@ export function useReplay(mySeat: Seat | null, onEvent?: (ev: PazaakEvent) => vo
   return { display, banner, finished, replay, resetDisplay, showSnapshot, setBanner, setFinished };
 }
 
-function setBannerText(
+export function setBannerText(
   t: (key: string, params?: Record<string, string | number>) => string,
   winner: Seat | null,
   totals: [number, number],
   mySeat: Seat | null,
-  reason?: string,
+  reason: SetReason,
 ): string {
   if (winner == null) {
     return t('tie_set', { mine: totals[0], theirs: totals[1] });
   }
   const bust = reason === 'bust';
+  const nineCards = reason === 'nine-cards';
   if (mySeat == null) {
     const params = {
       player: winner + 1,
@@ -160,14 +161,20 @@ function setBannerText(
       mine: totals[winner],
       theirs: totals[1 - winner],
     };
-    return t(bust ? 'player_bust_set' : 'player_wins_set', params);
+    if (bust) return t('player_bust_set', params);
+    if (nineCards) return t('player_nine_cards_set', params);
+    return t('player_wins_set', params);
   }
   const mine = totals[mySeat];
   const theirs = totals[1 - mySeat];
   if (winner === mySeat) {
-    return t(bust ? 'opponent_bust_set' : 'you_win_set', { mine, theirs });
+    if (bust) return t('opponent_bust_set', { mine, theirs });
+    if (nineCards) return t('you_nine_cards_set', { mine, theirs });
+    return t('you_win_set', { mine, theirs });
   }
-  return t(bust ? 'you_bust_set' : 'opponent_wins_set', { mine, theirs });
+  if (bust) return t('you_bust_set', { mine, theirs });
+  if (nineCards) return t('opponent_nine_cards_set', { mine, theirs });
+  return t('opponent_wins_set', { mine, theirs });
 }
 
 function matchBannerText(

@@ -202,6 +202,7 @@ SOFTWARE.`;
               <li>{t('help_li4')}</li>
               <li>{t('help_li5')}</li>
               <li>{t('help_li6')}</li>
+              <li>{t('help_li7')}</li>
             </ul>
           </div>
         )}
