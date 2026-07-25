@@ -10,7 +10,7 @@
 
 export type Seat = 0 | 1;
 
-type SetReason = 'bust' | 'higher' | 'nine-cards' | 'tie';
+export type SetReason = 'bust' | 'higher' | 'nine-cards' | 'tie';
 
 export type PazaakEvent =
   | { type: 'draw'; actor: Seat; card: string; total: number; family: string }
