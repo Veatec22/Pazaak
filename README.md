@@ -1,91 +1,127 @@
 <p align="center">
-  <img src="public/brand/icon-192.png" height="80" alt="Pazaak Icon" style="vertical-align: middle; margin-right: 15px;" />
-  <img src="public/brand/logo.png" height="80" alt="Pazaak Logo" style="vertical-align: middle;" />
+  <img src="public/brand/logo.png" height="96" alt="Pazaak" />
 </p>
 
+<p align="center">
+  <b>The card game from <i>Knights of the Old Republic</i>, rebuilt for the browser.</b><br />
+  Sit down at a cantina table against Bastila, Canderous and the rest of the crew, or deal a friend in over peer-to-peer.
+</p>
 
-A modern, responsive, and serverless web adaptation of the classic **Pazaak** card game from Star Wars franchise. Play against different AI difficulties in Single Player (Quick Match or Campaign) or challenge your friends in Peer-to-Peer Multiplayer.
+<p align="center">
+  <a href="https://pazaak.app"><img src="https://img.shields.io/badge/play-pazaak.app-1ab28c?style=for-the-badge" alt="Play at pazaak.app" /></a>
+  <img src="https://img.shields.io/badge/PWA-installable-0d5945?style=for-the-badge" alt="Installable PWA" />
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-0d5945?style=for-the-badge" alt="MIT license" /></a>
+</p>
 
-No backend, no database, no registration — matches run directly in your browser.
+<p align="center">
+  <img src="docs/screenshots/board.webp" alt="A match against Bastila Shan: both tables mid-set, your hand of side cards below" width="900" />
+</p>
 
----
+No backend, no account, no install required: everything runs in your browser, and online matches go straight from one player to the other.
 
-## 🌟 Features
+## Pick your opponent
 
-*   **🎮 Single Player Modes:**
-    *   **Campaign:** Climb the AI deck ladder across 4 tiers of difficulty (Easy, Normal, Hard, Hardcore).
-    *   **Quick Match:** Face a random-tier bot using a classic, flip, or mixed card pool.
-*   **👥 Local Multiplayer (Pass & Play):** Play locally with a friend on a single device.
-*   **🌐 Online P2P Multiplayer:**
-    *   Hosted purely over WebRTC via Trystero using public torrent trackers for signaling.
-    *   No server setup required: simply share your room link or code to connect instantly.
-    *   Robust reconnect mechanics: if a connection drops, guest automatically resynchronizes to the host's match state.
-*   **🎵 Nostalgic Audiovisuals:**
-    *   Original card designs and high-fidelity graphics.
-    *   Classic KotOR UI click sounds, card dealing effects, and cantina playlist.
-*   **📱 Responsive & PWA Ready:** Beautifully optimized layout for both desktop and mobile browsers, installable as a progressive web app.
-*   **🌍 Multi-language Support:** Full localization in both **English** and **Polish**.
+<p align="center">
+  <img src="docs/screenshots/opponents.webp" alt="Opponent select: twelve companions from KotOR I and II" width="900" />
+</p>
 
----
+Twelve companions from *KotOR* and *KotOR II*, from Carth and Mission to Kreia and Mandalore, each with a portrait and their own voice lines when the match starts, after each set and when it's over. Their avatar lights up while they talk.
 
-## 🎲 Game Rules Overview
+## Modes
 
-Pazaak is a black-jack style card game where the goal is to win 3 sets.
-1.  **Objective:** Get your card total as close to **20** as possible without exceeding it (busting).
-2.  **Gameplay:** Draw cards automatically from the main deck on your turn. You can choose to play one of your 4 side cards to adjust your score.
-3.  **Actions:** Choose to **End Turn** (wait for the next card) or **Stand** (freeze your score and wait for your opponent).
-4.  **Victory:** The player with the highest total score $\le 20$ wins the set. A tie results in a draw.
+- **Quick Match:** one match against a companion of your choice (or a random one), with a classic, flip, mixed or self-built side deck.
+- **Campaign:** climb a ladder of five opponents whose side decks get nastier at every step. Four difficulties set the cards you get to work with; in Hardcore a single loss wipes your progress.
+- **Deck Builder:** put together your own 10-card side deck, duplicates allowed, and take it into Quick Match or online play.
+- **Online:** open a table and share the link or QR code, or join an open table from the lobby. Matches run peer-to-peer over WebRTC ([Trystero](https://github.com/dmotz/trystero)) and survive dropped connections: the guest resyncs to the host's game.
+- **Hot Seat:** two players, one device, passing it back and forth.
 
----
+## At the table
 
-## 🛠️ Architecture & Tech Stack
+<table>
+  <tr>
+    <td width="66%"><img src="docs/screenshots/victory.webp" alt="End of a won match: set-by-set scores and stats, gold cards raining down" /></td>
+    <td><img src="docs/screenshots/mobile.webp" alt="The board on a phone, portrait" /></td>
+  </tr>
+</table>
 
-This project is built client-side with **React**, **TypeScript**, **Vite**, and **Trystero**:
+- Side cards fly from your hand to the table; the opponent's leave the exact slot in their hand and turn over on the way. ± cards flip over when you switch their sign.
+- Totals roll like an odometer, and hitting 20 or busting gets its own moment on the table.
+- Each match ends on a scoreboard with every set and a few stats: exact 20s, busts, side cards played. Wins rain gold cards; losses drain the board of colour while your cards crumble away.
+- KotOR interface and card sounds, plus a cantina jukebox with tracks from both games.
+- Plays on phones and desktops, portrait or landscape. On Android, busts, 20s and match results buzz the phone.
+- Keyboard play on desktop, in English or Polish, and it respects reduced-motion settings.
 
-*   **`src/engine/`**: A faithful TypeScript implementation of the original Pazaak rules, session states, and card pools. It is transport- and UI-agnostic.
-*   **`src/net/`**: Handles signaling and authoritative P2P communication powered by **Trystero** (WebRTC). The host runs the game state engine and broadcasts event streams and snapshots to the guest.
-*   **`src/ui/`**: A responsive, touch-friendly UI board. Extends the original assets with modern styling, sounds, and dialog controllers.
-*   **`src/music/`**: Integrates HTML5 Audio to stream, loop, and control the classic cantina music tracks.
+<p align="center">
+  <img src="docs/screenshots/deck-builder.webp" alt="Deck builder: pick 10 side cards from the full collection" width="900" />
+</p>
 
----
+## How to play
 
-## 🚀 Development & Setup
+Pazaak is blackjack with a twist: get closer to **20** than your opponent without going over.
 
-Make sure you have [Bun](https://bun.sh/) installed.
+1. **Each turn** you draw a card from the main deck (values 1–10) onto your table.
+2. **Side cards:** you bring a 10-card side deck, and 4 of its cards are dealt to you for the whole match. You may play one per turn, each only once. `+` cards add, `−` cards subtract, and `±` cards let you choose.
+3. **End turn** to keep drawing next turn, or **Stand** to lock your total.
+4. **A set ends** when both players stand, someone goes over 20 (a bust loses the set), or someone fills all 9 slots without busting (that wins it outright). Equal totals are a tie and the set is replayed.
+5. **First to win 3 sets** takes the match.
 
-### Install dependencies
+### Keyboard
+
+| Key | Action |
+| --- | --- |
+| <kbd>E</kbd> | End turn |
+| <kbd>S</kbd> | Stand |
+| <kbd>1</kbd>–<kbd>4</kbd> | Play the side card in that slot |
+| <kbd>Shift</kbd> + <kbd>1</kbd>–<kbd>4</kbd> | Flip the sign of a ± card |
+
+## Under the hood
+
+Built with **React 19**, **TypeScript** and **Vite**, plus **Trystero** for networking and **vite-plugin-pwa** for offline install. No server code.
+
+| Folder | What lives there |
+| --- | --- |
+| `src/engine/` | The rules: a faithful, UI-free TypeScript implementation of Pazaak, its card pools, campaign decks and the bot. |
+| `src/net/` | Online play over Trystero (WebRTC, BitTorrent trackers for signaling). The host runs the engine and streams events and snapshots to the guest. |
+| `src/ui/` | The board: card flights, table moments, match summary, sounds and haptics. |
+| `src/components/` | Menus, opponent select, campaign, deck builder and the online waiting room. |
+| `src/campaign/`, `src/deckBuilder/` | Campaign progress and saved custom decks. |
+| `src/companions/` | The companion roster: portraits and voice lines. |
+| `src/music/` | The cantina music player. |
+
+## Development
+
+You'll need [Bun](https://bun.sh/).
+
 ```bash
 bun install
 ```
 
-### Run local development server
 ```bash
 bun run dev
 ```
-Open [http://127.0.0.1:7443](http://127.0.0.1:7443) in your browser.
 
-### Run tests
-The test suite contains parity tests verifying the rules engine and game session states:
+The dev server runs at [http://localhost:7443](http://localhost:7443).
+
 ```bash
-bun test
+bun run test
 ```
 
-### Build for production
-```bash
-bun run build
-```
+Runs the Vitest suite: the rules engine and match sessions, campaign progress, custom decks, online setup and the main screens.
 
-### Lint code
 ```bash
 bun run lint
 ```
 
----
+```bash
+bun run build
+```
 
-## ⚖️ Disclaimer & Legal Notice
+## Disclaimer & legal notice
 
-This is a non-profit, fan-made passion project created solely for educational and entertainment purposes. 
+This is a non-profit, fan-made passion project created solely for educational and entertainment purposes.
 
-*   **No Affiliation:** This project is not affiliated with, authorized, endorsed by, or in any way officially connected with Disney, Lucasfilm Ltd., BioWare, Obsidian Entertainment, Electronic Arts, or any of their affiliates or subsidiaries.
-*   **Ownership:** *Star Wars*, *Knights of the Old Republic*, *Pazaak*, and all associated logos, designs, card art, sounds, and names are trademarks and/or registered copyrights of Lucasfilm Ltd. and their respective intellectual property owners.
-*   **Fair Use:** All assets reused from the original game are utilized under fair use guidelines for non-commercial fan creations. If you are an intellectual property owner and wish for assets to be removed, please open an issue.
+- **No affiliation:** This project is not affiliated with, authorized, endorsed by, or in any way officially connected with Disney, Lucasfilm Ltd., BioWare, Obsidian Entertainment, Electronic Arts, or any of their affiliates or subsidiaries.
+- **Ownership:** *Star Wars*, *Knights of the Old Republic*, *Pazaak*, and all associated logos, designs, card art, sounds, voices and names are trademarks and/or registered copyrights of Lucasfilm Ltd. and their respective intellectual property owners.
+- **Fair use:** All assets reused from the original games are used under fair-use guidelines for non-commercial fan creations. If you are an intellectual property owner and wish for assets to be removed, please open an issue.
+
+The code in this repository is released under the [MIT License](LICENSE); it does not cover the game assets above.

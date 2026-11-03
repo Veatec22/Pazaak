@@ -149,3 +149,418 @@
 
 
 
+
+/* Reduced motion keeps the state changes (fades, colour, the stamp) and drops travel and loops. */
+@media (prefers-reduced-motion: reduce) {
+  .pz-card,
+  .pz-deal-in,
+  .pz-banner,
+  .pz-stand-stamp {
+    animation-name: pz-fade-in;
+  }
+  .pz-banner.match.win {
+    animation: pz-fade-in 0.25s ease-out;
+  }
+  .pz-player.active::after,
+  .pz-banner.match.win::before {
+    animation: none;
+  }
+  .pz-hand-flip-shell.playable:hover,
+  .pz-hand-flip-shell.playable:active,
+  .pz-btn:active:not(:disabled) {
+    transform: none;
+  }
+}
+@keyframes pz-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pz-roll .out {
+    display: none;
+  }
+  .pz-roll .in {
+    animation: none;
+  }
+}
+
+
+/* Big moments: one-shot overlays on a seat's panel, replayed per occurrence by key. */
+.pz-moment {
+  position: absolute;
+  inset: -1px;
+  z-index: 4;
+  border-radius: inherit;
+  overflow: hidden;
+  pointer-events: none;
+}
+/* Over 20: the panel flushes red and fades, in step with the cards jolting. */
+.pz-moment.bust {
+  background: radial-gradient(ellipse at 50% 40%, rgba(255, 70, 70, 0.16), transparent 70%);
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 107, 107, 0.85),
+    inset 0 0 70px rgba(255, 70, 70, 0.45);
+  animation: pz-moment-flash 0.75s ease-out forwards;
+}
+@keyframes pz-moment-flash {
+  0% {
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+/* Exactly 20: a gold rim, and a band of light sweeping across the cards. */
+.pz-moment.pazaak {
+  box-shadow:
+    inset 0 0 0 2px rgba(247, 231, 154, 0.8),
+    inset 0 0 60px rgba(232, 200, 74, 0.3);
+  animation: pz-moment-glow 1.2s ease-out forwards;
+}
+.pz-moment.pazaak::before {
+  content: '';
+  position: absolute;
+  top: -20%;
+  bottom: -20%;
+  left: -60%;
+  width: 45%;
+  background: linear-gradient(100deg, transparent, rgba(255, 240, 180, 0.3) 50%, transparent);
+  mix-blend-mode: screen;
+  transform: translateX(0) skewX(-12deg);
+  animation: pz-moment-sweep 0.9s var(--ease-in-out) 0.08s forwards;
+}
+@keyframes pz-moment-glow {
+  0% {
+    opacity: 0;
+  }
+  10%,
+  65% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes pz-moment-sweep {
+  to {
+    transform: translateX(380%) skewX(-12deg);
+  }
+}
+
+/* A set won: the new pip pops on and throws a gold ring. */
+.pz-pip {
+  position: relative;
+}
+.pz-pip.on {
+  animation: pz-pip-win 0.5s cubic-bezier(0.2, 1.6, 0.4, 1) both;
+}
+.pz-pip.on::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border: 2px solid var(--gold-bright);
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+  animation: pz-pip-ring 0.8s ease-out 0.1s;
+}
+@keyframes pz-pip-win {
+  from {
+    transform: scale(0.2);
+  }
+}
+@keyframes pz-pip-ring {
+  from {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(3.2);
+  }
+}
+
+/* A set over: its cards sweep off the table one after another instead of vanishing. */
+.pz-board-row {
+  position: relative;
+}
+.pz-grid-leaving {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+.pz-grid .pz-card.leaving {
+  animation: pz-card-leave 0.32s var(--ease-out) calc(var(--li, 0) * 22ms) forwards;
+}
+@keyframes pz-card-leave {
+  to {
+    transform: translate(18%, -14%) rotate(8deg) scale(0.92);
+    opacity: 0;
+  }
+}
+
+/* A match won: gold cards rain over the board, behind the banner. Plays once. */
+.pz-shower {
+  position: fixed;
+  inset: 0;
+  z-index: 49;
+  overflow: hidden;
+  pointer-events: none;
+}
+.pz-shower-card {
+  position: absolute;
+  top: 0;
+  width: var(--w);
+  aspect-ratio: 104 / 128;
+}
+.pz-shower-fall {
+  width: 100%;
+  height: 100%;
+  translate: 0 -120%;
+  animation: pz-shower-fall var(--fall) cubic-bezier(0.35, 0.1, 0.6, 1) var(--delay) forwards;
+}
+@keyframes pz-shower-fall {
+  from {
+    translate: 0 -120%;
+  }
+  to {
+    translate: 0 calc(100vh + 20%);
+  }
+}
+.pz-shower-spin {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  /* Enough turns to outlast the fall, then it stops instead of spinning off screen. */
+  animation: pz-shower-spin var(--spin) linear 3;
+}
+@keyframes pz-shower-spin {
+  from {
+    transform: perspective(600px) rotate3d(var(--axis), 0deg);
+  }
+  to {
+    transform: perspective(600px) rotate3d(var(--axis), 360deg);
+  }
+}
+.pz-shower-face {
+  position: absolute;
+  inset: 0;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  filter: blur(var(--blur)) drop-shadow(0 8px 12px rgba(0, 0, 0, 0.5));
+}
+.pz-shower-face.back {
+  transform: rotateY(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pz-shower,
+  .pz-moment.pazaak::before,
+  .pz-pip.on::after {
+    display: none;
+  }
+  .pz-pip.on {
+    animation: pz-fade-in 0.3s ease;
+  }
+  .pz-grid .pz-card.leaving {
+    animation-name: pz-fade-out;
+  }
+}
+@keyframes pz-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+
+/* Match summary inside the end banner: set totals on the scoreboard, then the tally. */
+.pz-summary {
+  display: grid;
+  grid-template-columns: auto minmax(4.5em, 1fr) minmax(4.5em, 1fr);
+  align-items: center;
+  column-gap: 14px;
+  row-gap: 7px;
+  width: 100%;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text);
+  text-shadow: none;
+}
+.pz-summary-head,
+.pz-summary-label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+.pz-summary-head {
+  align-self: end;
+  text-align: center;
+  line-height: 1.25;
+  /* Long names wrap between words and shrink to fit the column (nameFit.ts). */
+  container-type: inline-size;
+}
+.pz-summary-head > span {
+  display: block;
+  font-size: min(1em, 100cqi / (var(--chars, 6) * (var(--name-em, 0.97) + 0.14)));
+  font-stretch: var(--name-stretch, 100%);
+  overflow-wrap: normal;
+}
+.pz-summary-label {
+  text-align: left;
+}
+.pz-summary-score {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  padding-bottom: 4px;
+}
+.pz-summary-total {
+  font-size: 1.15rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: var(--text-bright);
+  opacity: 0;
+  animation: pz-summary-stat-in 0.35s var(--ease-out) var(--reveal, 0ms) forwards;
+}
+.pz-summary-total.pazaak {
+  color: var(--gold-bright);
+}
+.pz-summary-total.bust {
+  color: #ff6b6b;
+}
+/* The set's winner gets a lit bar under their total once it has appeared. */
+.pz-summary-score.won::after {
+  content: '';
+  position: absolute;
+  left: 30%;
+  right: 30%;
+  bottom: 0;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--gold-bright);
+  box-shadow: 0 0 8px rgba(232, 200, 74, 0.7);
+  transform: scaleX(0);
+  animation: pz-summary-mark 0.3s var(--ease-out) calc(var(--reveal, 0ms) + 0.2s) forwards;
+}
+@keyframes pz-summary-mark {
+  to {
+    transform: scaleX(1);
+  }
+}
+.pz-summary-rule {
+  grid-column: 1 / -1;
+  height: 1px;
+  margin: 4px 0 1px;
+  background: linear-gradient(90deg, transparent, var(--border-soft), transparent);
+}
+.pz-summary-value {
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-bright);
+}
+.pz-summary-stat {
+  opacity: 0;
+  animation: pz-summary-stat-in 0.4s var(--ease-out) var(--stats-delay, 0ms) forwards;
+}
+@keyframes pz-summary-stat-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* A lost match: colour drains from the board and the hand slumps. */
+.pz-playfield {
+  transition: filter 1.6s ease;
+}
+.pz-root.defeated .pz-playfield {
+  filter: grayscale(0.85) brightness(0.7);
+}
+.pz-root.defeated .pz-hand-flip-shell {
+  animation: pz-slump 1.4s cubic-bezier(0.5, 0, 0.75, 0) calc(var(--di, 0) * 90ms + 200ms) forwards;
+}
+.pz-hand-slot:nth-child(odd) .pz-hand-flip-shell {
+  --slump: -6deg;
+}
+.pz-hand-slot:nth-child(even) .pz-hand-flip-shell {
+  --slump: 4deg;
+}
+@keyframes pz-slump {
+  to {
+    transform: translateY(14%) rotate(var(--slump, 5deg));
+    opacity: 0.55;
+  }
+}
+/* ...and the deciding set's cards crumble off the table under their own weight. */
+.pz-grid-leaving.crumble .pz-card.leaving {
+  animation: pz-card-crumble 1.2s cubic-bezier(0.45, 0, 0.8, 0.4) calc(var(--li, 0) * 80ms) forwards;
+}
+.pz-grid-leaving.crumble .pz-card.leaving:nth-child(3n + 1) {
+  --crumble-r: -5deg;
+}
+.pz-grid-leaving.crumble .pz-card.leaving:nth-child(3n + 2) {
+  --crumble-r: 3deg;
+}
+.pz-grid-leaving.crumble .pz-card.leaving:nth-child(3n) {
+  --crumble-r: -2deg;
+}
+@keyframes pz-card-crumble {
+  15% {
+    transform: translateY(-3%) rotate(var(--crumble-r, 4deg));
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(140%) rotate(calc(var(--crumble-r, 4deg) * 5));
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pz-root.defeated .pz-hand-flip-shell {
+    animation: none;
+  }
+  .pz-grid-leaving.crumble .pz-card.leaving {
+    animation-name: pz-fade-out;
+  }
+  .pz-summary-stat,
+  .pz-summary-total {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* End-of-match choices side by side, one height, the primary one first. */
+.pz-banner-actions {
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  gap: 10px;
+  width: 100%;
+  margin-top: 2px;
+}
+.pz-banner-actions .pz-btn {
+  flex-direction: row;
+  gap: 6px;
+  min-height: 40px;
+  padding: 10px 14px;
+  font-size: 0.72rem;
+  text-shadow: none;
+}

@@ -14,6 +14,24 @@ let enabled = true;
 const buffers = new Map<string, AudioBuffer>();
 const pending = new Map<string, Promise<AudioBuffer | null>>();
 
+/** Told whenever the companion starts or stops saying a line. */
+type VoiceListener = (speaking: boolean) => void;
+const listeners = new Set<VoiceListener>();
+let speakingLine: AudioBufferSourceNode | null = null;
+
+function setSpeakingLine(line: AudioBufferSourceNode | null) {
+  speakingLine = line;
+  listeners.forEach((listener) => listener(line != null));
+}
+
+export function onCompanionVoice(listener: VoiceListener): () => void {
+  listeners.add(listener);
+  listener(speakingLine != null);
+  return () => {
+    listeners.delete(listener);
+  };
+}
+
 function ensureContext(): AudioContext | null {
   if (!enabled) return null;
   const Ctor = audioContextCtor();
@@ -81,6 +99,10 @@ export function playCompanionLine(companion: Companion, category: CompanionVoice
     const gain = ctx.createGain();
     gain.gain.value = VOLUME;
     source.connect(gain).connect(ctx.destination);
+    source.onended = () => {
+      if (speakingLine === source) setSpeakingLine(null);
+    };
     source.start();
+    setSpeakingLine(source);
   })();
 }

@@ -97,22 +97,36 @@
     display: none;
   }
 
+  /* The rail is narrow: long names wrap between words and shrink to fit (nameFit.ts). */
   .pz-board-rail .pz-pname {
     order: 1;
-    font-size: clamp(0.36rem, 1.4vw, 0.58rem);
+    font-size: clamp(0.46rem, 1.7vw, 0.64rem);
     width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    container-type: inline-size;
     letter-spacing: 0.03em;
     line-height: 1.05;
-    white-space: nowrap;
     text-align: center;
+  }
+  .pz-board-rail .pz-pname-text {
+    width: 100%;
+    font-size: min(1em, 100cqi / (var(--chars, 6) * (var(--name-em, 0.97) + 0.03)));
+    font-stretch: var(--name-stretch, 100%);
+    overflow-wrap: normal;
+  }
+  /* Plenty of room above the name in the rail: the portrait fills most of its width. */
+  .pz-board-rail .pz-companion-avatar {
+    width: min(100%, calc(var(--pz-total-size) * 2));
+    height: auto;
+    aspect-ratio: 1;
+  }
+  .pz-board-rail {
+    --pz-total-size: clamp(0.9rem, 3vw, 1.45rem);
   }
   .pz-board-rail .pz-total {
     order: 2;
     margin-left: 0;
     min-width: 0;
-    font-size: clamp(0.9rem, 3vw, 1.45rem);
+    font-size: var(--pz-total-size);
     line-height: 1;
   }
   .pz-board-rail .pz-pips {
@@ -275,11 +289,14 @@
     letter-spacing: 0.12em;
     text-align: right;
   }
+  .pz-board-rail {
+    --pz-total-size: clamp(1.5rem, 3vh, 2.4rem);
+  }
   .pz-board-rail .pz-total {
     order: 3;
     margin-left: 0;
     min-width: 0;
-    font-size: clamp(1.5rem, 3vh, 2.4rem);
+    font-size: var(--pz-total-size);
     line-height: 1;
   }
   .pz-board-rail .pz-pips {
