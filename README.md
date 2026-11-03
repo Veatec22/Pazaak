@@ -122,6 +122,6 @@ This is a non-profit, fan-made passion project created solely for educational an
 
 - **No affiliation:** This project is not affiliated with, authorized, endorsed by, or in any way officially connected with Disney, Lucasfilm Ltd., BioWare, Obsidian Entertainment, Electronic Arts, or any of their affiliates or subsidiaries.
 - **Ownership:** *Star Wars*, *Knights of the Old Republic*, *Pazaak*, and all associated logos, designs, card art, sounds, voices and names are trademarks and/or registered copyrights of Lucasfilm Ltd. and their respective intellectual property owners.
-- **Fair use:** All assets reused from the original games are used under fair-use guidelines for non-commercial fan creations. If you are an intellectual property owner and wish for assets to be removed, please open an issue.
+- **Third-party assets:** This project includes assets from the original games and makes no blanket legal claim about their use. If you are a rights holder and want assets removed, please open an issue.
 
 The code in this repository is released under the [MIT License](LICENSE); it does not cover the game assets above.

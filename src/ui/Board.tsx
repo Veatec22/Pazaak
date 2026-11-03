@@ -225,6 +225,8 @@ export function Board({
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.ctrlKey || e.metaKey || e.altKey || e.repeat || showForfeitConfirm) return;
+      // Any open dialog (help, data wipe, dropped connection) keeps the table out of reach.
+      if (document.querySelector('.pz-modal-overlay')) return;
       if (e.target instanceof Element && e.target.closest('input, textarea, select, [contenteditable="true"]')) return;
       const digit = /^(?:Digit|Numpad)([1-4])$/.exec(e.code);
       if (e.code === 'KeyE' && yourTurn) act({ type: 'end_turn' });
@@ -689,7 +691,8 @@ function HandCardFlip({
   const settleTurn = (e: AnimationEvent<HTMLDivElement>) => {
     if (e.target !== e.currentTarget) return;
     if (face.phase === 'out') setFace({ code, label: nextLabel, phase: 'in' });
-    else if (face.phase === 'in') setFace((f) => ({ ...f, phase: 'idle' }));
+    // Settle on the newest label: the sign may have changed again while this face came up.
+    else if (face.phase === 'in') setFace({ code, label: nextLabel, phase: 'idle' });
   };
   const frontFamily = code ? familyForCode(code) : 'plus';
   const frontImage = frontLabel ? cardArt(frontLabel, frontFamily) : CARD_BACK;
