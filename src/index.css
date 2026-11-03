@@ -17,6 +17,9 @@
   --gold: #e8c84a;
   --gold-bright: #f7e79a;
   --gold-deep: #9a7b41;
+
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
 }
 
 * {
@@ -103,3 +106,93 @@ svg.lucide {
   stroke-width: 3px;
 }
 
+
+/*
+ * Screen changes (transitionRoute in App.tsx). Between menus only the menu's content
+ * moves: it slides a step sideways (the other way when going back) while the backdrop,
+ * logo and top bar stay put. Sitting down at or leaving a table swaps the whole page
+ * with a slight zoom. Reduced motion keeps a plain crossfade.
+ */
+.pz-lobby-content {
+  view-transition-name: pz-screen;
+}
+::view-transition-old(*) {
+  animation: pz-route-fade-out 0.18s ease-in both;
+}
+::view-transition-new(*) {
+  animation: pz-route-fade-in 0.32s var(--ease-out) both;
+}
+:root[data-route-transition='forward']::view-transition-old(root),
+:root[data-route-transition='back']::view-transition-old(root) {
+  animation: none;
+  opacity: 0;
+}
+:root[data-route-transition='forward']::view-transition-new(root),
+:root[data-route-transition='back']::view-transition-new(root) {
+  animation: none;
+}
+:root[data-route-transition='forward']::view-transition-old(pz-screen) {
+  animation-name: pz-route-out-left;
+}
+:root[data-route-transition='forward']::view-transition-new(pz-screen) {
+  animation-name: pz-route-in-right;
+}
+:root[data-route-transition='back']::view-transition-old(pz-screen) {
+  animation-name: pz-route-out-right;
+}
+:root[data-route-transition='back']::view-transition-new(pz-screen) {
+  animation-name: pz-route-in-left;
+}
+:root[data-route-transition='table']::view-transition-new(root) {
+  animation-name: pz-route-zoom-in;
+  animation-duration: 0.42s;
+}
+@keyframes pz-route-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes pz-route-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes pz-route-out-left {
+  to {
+    opacity: 0;
+    transform: translateX(-28px);
+  }
+}
+@keyframes pz-route-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(28px);
+  }
+}
+@keyframes pz-route-out-right {
+  to {
+    opacity: 0;
+    transform: translateX(28px);
+  }
+}
+@keyframes pz-route-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-28px);
+  }
+}
+@keyframes pz-route-zoom-in {
+  from {
+    opacity: 0;
+    transform: scale(1.04);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation-name: pz-route-fade-out !important;
+  }
+  ::view-transition-new(*) {
+    animation-name: pz-route-fade-in !important;
+  }
+}

@@ -1,17 +1,50 @@
+/*
+ * The cantina table. Each player's panel is a worn tabletop: a fine grain, long faint
+ * streaks like brushed metal, a pool of lamplight over the cards and edges that sink
+ * into shadow. Around the tables the room itself falls off into a vignette.
+ */
+.pz-root {
+  --pz-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.75 0 0 0 0 1 0 0 0 0 0.92 0.075 0 0 0 0'/%3E%3C/filter%3E%3Cfilter id='b'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.004 0.55' numOctaves='2' seed='4' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.6 0 0 0 0 0.95 0 0 0 0 0.85 0.055 0 0 0 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23b)'/%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+  background:
+    radial-gradient(ellipse 85% 80% at 50% 50%, transparent 45%, rgba(0, 0, 0, 0.55) 100%),
+    radial-gradient(1200px 600px at 50% -10%, rgba(26, 178, 140, 0.12), transparent 60%),
+    var(--bg);
+}
+.pz-player {
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 42%, rgba(26, 178, 140, 0.07), transparent 70%),
+    radial-gradient(ellipse 110% 100% at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.38) 100%),
+    var(--pz-grain),
+    var(--panel);
+}
+
+.pz-grid {
+  transition: opacity 0.3s ease;
+}
 .pz-player.standing .pz-grid {
   opacity: 0.82;
 }
 .pz-player.active {
   border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent), 0 0 22px rgba(26, 178, 140, 0.22);
+}
+/* The wider glow lives on its own layer so the pulse is an opacity change, not a repaint. */
+.pz-player::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  box-shadow: 0 0 44px rgba(26, 178, 140, 0.32);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+.pz-player.active::after {
   animation: pz-active-pulse 2s ease-in-out infinite;
 }
 @keyframes pz-active-pulse {
-  0%,
-  100% {
-    box-shadow: 0 0 0 1px var(--accent), 0 0 22px rgba(26, 178, 140, 0.22);
-  }
   50% {
-    box-shadow: 0 0 0 1px var(--accent), 0 0 40px rgba(26, 178, 140, 0.4);
+    opacity: 1;
   }
 }
 
@@ -38,11 +71,14 @@
   letter-spacing: 0.08em;
   text-align: center;
 }
+.pz-board-rail {
+  --pz-total-size: clamp(1.35rem, 5vw, 1.75rem);
+}
 .pz-board-rail .pz-total {
   order: 2;
   margin-left: 0;
   min-width: 0;
-  font-size: clamp(1.35rem, 5vw, 1.75rem);
+  font-size: var(--pz-total-size);
   line-height: 1;
 }
 .pz-board-rail .pz-pips {
@@ -130,17 +166,67 @@
   box-shadow: 0 0 10px rgba(232, 200, 74, 0.7), inset 0 0 3px rgba(255, 255, 255, 0.25);
 }
 .pz-total {
+  display: inline-flex;
   margin-left: auto;
   font-size: clamp(1.1rem, 3vw, 2.4rem);
   font-weight: 800;
   font-variant-numeric: tabular-nums;
   color: var(--text-bright);
-  min-width: 2ch;
-  text-align: right;
+  transition: color 0.2s ease, text-shadow 0.2s ease;
+}
+.pz-total.pazaak {
+  color: var(--gold-bright);
+  text-shadow: 0 0 0.3em rgba(232, 200, 74, 0.6);
 }
 .pz-total.bust {
   color: #ff6b6b;
+  text-shadow: 0 0 0.3em rgba(255, 107, 107, 0.45);
 }
+.pz-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/*
+ * Rolling digits: a changed digit rolls past like an odometer wheel. Climbing totals
+ * roll up (the new digit rises from below); a minus card rolls them back down.
+ */
+.pz-roll {
+  display: inline-grid;
+  width: 1ch;
+  overflow-y: clip;
+  overflow-clip-margin: 0.08em;
+}
+.pz-roll > span {
+  grid-area: 1 / 1;
+  text-align: center;
+}
+.pz-roll .out {
+  animation: pz-roll-out 0.3s var(--ease-out) var(--roll-delay, 0ms) both;
+}
+.pz-roll .in {
+  animation: pz-roll-in 0.3s var(--ease-out) var(--roll-delay, 0ms) both;
+}
+.pz-roll.down {
+  --roll-dir: -1;
+}
+@keyframes pz-roll-out {
+  to {
+    transform: translateY(calc(var(--roll-dir, 1) * -100%));
+    opacity: 0;
+  }
+}
+@keyframes pz-roll-in {
+  from {
+    transform: translateY(calc(var(--roll-dir, 1) * 100%));
+    opacity: 0;
+  }
+}
+
 
 
 
@@ -182,9 +268,24 @@
   max-width: 100%;
   max-height: 100%;
 }
-.pz-slot {
-  border-radius: 5px;
-  border: 1px dashed var(--border-soft);
+
+/* Empty slots read as recesses in the table rather than wireframe boxes. */
+.pz-slot,
+.pz-hand-card.empty {
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.22);
+  box-shadow:
+    inset 0 2px 6px rgba(0, 0, 0, 0.5),
+    inset 0 0 0 1px rgba(109, 243, 207, 0.05);
+  transition: box-shadow 0.25s ease;
+}
+/* The slot the next card lands in, on the seat whose turn it is. */
+.pz-player.active .pz-grid > .pz-slot:first-child,
+.pz-player.active .pz-card + .pz-slot {
+  box-shadow:
+    inset 0 2px 6px rgba(0, 0, 0, 0.5),
+    inset 0 0 0 1px rgba(109, 243, 207, 0.28),
+    inset 0 0 14px rgba(26, 178, 140, 0.14);
 }
 
 .pz-card,
@@ -198,9 +299,26 @@
   justify-content: center;
   border-radius: 5px;
 }
+/*
+ * The card art has no printed border, so it melts into the table. A thin dark rim is
+ * traced around the art's own outline (rounded corners included) by four half-pixel shadows.
+ * Board.tsx repeats this rim in its flight keyframes (CARD_EDGE).
+ */
+.pz-card,
+.pz-hand-face {
+  --pz-card-edge: drop-shadow(0.5px 0 0 rgba(22, 13, 6, 0.85)) drop-shadow(-0.5px 0 0 rgba(22, 13, 6, 0.85)) drop-shadow(0 0.5px 0 rgba(22, 13, 6, 0.85)) drop-shadow(0 -0.5px 0 rgba(22, 13, 6, 0.85));
+}
 .pz-card {
-  animation: pz-deal 0.3s ease-out;
+  animation: pz-deal 0.32s var(--ease-out);
   background-size: 122%;
+  filter: var(--pz-card-edge) drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4));
+}
+.pz-card.flying,
+.pz-card.flown {
+  animation: none;
+}
+.pz-card.flying {
+  z-index: 5;
 }
 .pz-card span,
 .pz-hand-card span {
@@ -222,7 +340,7 @@
 
 @keyframes pz-deal {
   from {
-    transform: translateY(-16px) scale(0.86);
+    transform: translateY(-16px) scale(0.92);
     opacity: 0;
   }
   to {
@@ -335,9 +453,39 @@
   height: 100%;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
+  filter: var(--pz-card-edge);
 }
 .pz-hand-back {
   transform: rotateY(180deg);
+}
+/* Switching a ± card's sign turns it over top-to-bottom, like the score flaps. */
+.pz-hand-front.down {
+  --sign-tilt: 90deg;
+}
+.pz-hand-front.up {
+  --sign-tilt: -90deg;
+}
+.pz-hand-front.sign-out {
+  animation: pz-sign-out 0.11s ease-in forwards;
+}
+.pz-hand-front.sign-in {
+  animation: pz-sign-in 0.26s var(--ease-out);
+}
+@keyframes pz-sign-out {
+  from {
+    transform: rotateX(0);
+  }
+  to {
+    transform: rotateX(var(--sign-tilt));
+  }
+}
+@keyframes pz-sign-in {
+  from {
+    transform: rotateX(calc(var(--sign-tilt) * -1));
+  }
+  to {
+    transform: rotateX(0);
+  }
 }
 .pz-seat-swap-reveal {
   animation: pz-seat-swap-reveal 0.52s cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
@@ -370,23 +518,26 @@
   aspect-ratio: 104 / 128;
 }
 
-.pz-hand-card.empty {
-  border-radius: 6px;
-  border: 1px dashed var(--border-soft);
-}
 .pz-hand-flip-shell .pz-hand-card {
   width: 100%;
   height: 100%;
+}
+.pz-hand-flip-shell {
+  transition: transform 0.16s var(--ease-out), filter 0.2s ease;
 }
 .pz-hand-flip-shell.playable,
 .pz-hand-card.playable {
   cursor: pointer;
   filter: drop-shadow(0 0 9px var(--accent));
-  transition: transform 0.12s ease;
 }
-.pz-hand-flip-shell.playable:hover,
-.pz-hand-card.playable:hover {
-  transform: translateY(-6%) scale(1.05);
+@media (hover: hover) and (pointer: fine) {
+  .pz-hand-flip-shell.playable:hover,
+  .pz-hand-card.playable:hover {
+    transform: translateY(-6%) scale(1.05);
+  }
+}
+.pz-hand-flip-shell.playable:active {
+  transform: translateY(-3%) scale(0.97);
 }
 .pz-flip-spacer {
   width: 34px;
@@ -462,7 +613,10 @@
   white-space: normal;
   line-height: 1.05;
   text-align: center;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.16s var(--ease-out);
+}
+.pz-btn:active:not(:disabled) {
+  transform: scale(0.97);
 }
 .pz-btn svg {
   flex-shrink: 0;
@@ -485,3 +639,38 @@
 }
 
 
+
+/*
+ * Keyboard hints: the key for each action, shown only with a mouse (fine pointer) and
+ * in the large desktop layout. Phones and the compact phone-sized layouts never show
+ * them, whatever the device reports about its pointer.
+ */
+.pz-kbd {
+  display: none;
+}
+@media (hover: hover) and (pointer: fine) and (orientation: landscape) and (min-height: 561px) {
+  .pz-kbd {
+    display: inline-block;
+    min-width: 1.5em;
+    margin-left: 6px;
+    padding: 2px 4px 1px;
+    border: 1px solid currentColor;
+    border-radius: 4px;
+    font: 700 0.62rem/1 "Science Gothic", sans-serif;
+    text-align: center;
+    opacity: 0.6;
+  }
+  .pz-hand-slot {
+    position: relative;
+  }
+  /* Sits in the corner of the ⇄ row above the card, so it costs no height. */
+  .pz-hand-kbd {
+    position: absolute;
+    top: 0;
+    left: 0;
+    margin: 0;
+    font-size: 0.68rem;
+    color: var(--text);
+    opacity: 0.75;
+  }
+}

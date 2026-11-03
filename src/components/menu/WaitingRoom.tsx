@@ -7,6 +7,7 @@ import { useI18n } from '../../net/useI18n';
 import { inviteUrlForRoom } from '../../navigation';
 import type { MatchController } from '../../ui/controller';
 import { useCopyToClipboard } from '../../ui/clipboard';
+import { ShuffleDeck } from '../../ui/ShuffleDeck';
 
 const QR_ICON = `${import.meta.env.BASE_URL}brand/icon-192.png`;
 const QR_SIZE = 144;
@@ -53,7 +54,7 @@ export function WaitingRoom({
 
         <div className="pz-modal-body pz-waiting-modal-body">
           <div className="pz-waiting-status">
-            <span className="pz-pulse-dot pz-waiting-status-dot" />
+            <ShuffleDeck state={lobby?.kicked ? 'idle' : hasOpponent ? 'ready' : 'shuffling'} />
             <span>
               {lobby?.kicked
                 ? t('online_lobby_kicked')

@@ -1,0 +1,95 @@
+.pz-shuffle {
+  --deck-w: 26px;
+  /* How long each card spends going from the top to the bottom of the deck. */
+  --step: 0.7s;
+  position: relative;
+  isolation: isolate;
+  display: inline-block;
+  flex: 0 0 auto;
+  width: calc(var(--deck-w) * 2.6);
+  height: calc(var(--deck-w) * 128 / 104 + 6px);
+}
+.pz-shuffle.large {
+  --deck-w: 46px;
+}
+.pz-shuffle-card {
+  position: absolute;
+  left: calc(50% - var(--deck-w) / 2);
+  bottom: 0;
+  width: var(--deck-w);
+  aspect-ratio: 104 / 128;
+  border-radius: calc(var(--deck-w) * 0.08);
+  background-size: cover;
+  background-position: center;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.55));
+  transform-origin: 50% 100%;
+  /* Squared up: each card a hair above the one below, so it reads as a deck. */
+  transform: translateY(calc(var(--i) * -1px));
+  transition: transform 0.45s var(--ease-out);
+}
+
+/*
+ * Cycling: one card at a time leaves the top, swings out to the side, drops behind and
+ * slides in under the deck; meanwhile every other card rises one layer. Each card runs
+ * the same cycle a step apart, so exactly one is always on the move.
+ */
+.pz-shuffle.shuffling .pz-shuffle-card {
+  /* One full cycle is one step per card (CARDS in ShuffleDeck.tsx). */
+  animation: pz-deck-cycle calc(var(--step) * 5) linear infinite;
+  animation-delay: calc(var(--i) * var(--step) * -1);
+}
+@keyframes pz-deck-cycle {
+  0% {
+    transform: translateY(-6px);
+    z-index: 4;
+    animation-timing-function: var(--ease-out);
+  }
+  7% {
+    transform: translate(58%, -34%) rotate(10deg);
+    z-index: 5;
+    animation-timing-function: ease-in;
+  }
+  9.9% {
+    transform: translate(66%, -20%) rotate(8deg);
+    z-index: 5;
+  }
+  10% {
+    transform: translate(66%, -20%) rotate(8deg);
+    z-index: -1;
+    animation-timing-function: var(--ease-in-out);
+  }
+  20% {
+    transform: translateY(0);
+    z-index: 0;
+  }
+  40% {
+    transform: translateY(-1.5px);
+    z-index: 1;
+  }
+  60% {
+    transform: translateY(-3px);
+    z-index: 2;
+  }
+  80% {
+    transform: translateY(-4.5px);
+    z-index: 3;
+  }
+  100% {
+    transform: translateY(-6px);
+    z-index: 4;
+  }
+}
+
+/* Ready: the deck opens into a fan, a hand waiting to be dealt. */
+.pz-shuffle.ready .pz-shuffle-card {
+  transform: translateY(-1px) rotate(calc(var(--fan) * 11deg));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pz-shuffle.shuffling .pz-shuffle-card {
+    animation: none;
+  }
+  .pz-shuffle-card {
+    transition: none;
+  }
+}

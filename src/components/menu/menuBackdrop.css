@@ -1,0 +1,176 @@
+/*
+ * Menu backdrop: a cantina pazaak table at night. A warm lamp over the logo, a
+ * holo-table receding below the menu, and side-deck cards drifting out of focus.
+ */
+.pz-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  background: var(--bg);
+}
+
+/* Two-light setup: warm lamp above the logo, cool table glow from below, dark edges. */
+.pz-bd-light {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(60vmax 38vmax at 50% 16%, rgba(232, 200, 74, 0.11), transparent 62%),
+    radial-gradient(80vmax 46vmax at 50% 108%, rgba(26, 178, 140, 0.2), transparent 64%),
+    radial-gradient(140% 100% at 50% 45%, transparent 55%, rgba(0, 0, 0, 0.6) 100%);
+}
+
+/* The holo-table: a perspective grid that rolls slowly toward the viewer. */
+.pz-bd-table {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 46%;
+  perspective: 520px;
+  perspective-origin: 50% 0%;
+  -webkit-mask-image: radial-gradient(75% 105% at 50% 100%, #000 35%, transparent 78%);
+  mask-image: radial-gradient(75% 105% at 50% 100%, #000 35%, transparent 78%);
+}
+.pz-bd-table::before {
+  content: '';
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(109, 243, 207, 0.55), transparent);
+  box-shadow: 0 0 18px 2px rgba(26, 178, 140, 0.35);
+}
+.pz-bd-grid {
+  position: absolute;
+  left: -60%;
+  width: 220%;
+  top: 0;
+  height: 260%;
+  transform-origin: 50% 0%;
+  transform: rotateX(70deg);
+  background-image:
+    linear-gradient(rgba(109, 243, 207, 0.16) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(109, 243, 207, 0.16) 1px, transparent 1px);
+  background-size: 64px 64px;
+  animation: pz-bd-roll 9s linear infinite;
+  will-change: transform;
+}
+@keyframes pz-bd-roll {
+  from {
+    transform: rotateX(70deg) translateY(-64px);
+  }
+  to {
+    transform: rotateX(70deg) translateY(0);
+  }
+}
+
+.pz-bd-cards {
+  position: absolute;
+  inset: 0;
+  transition: opacity 0.6s ease;
+}
+/* Layers per card: lane → fall + sway → 3D tumble → two faces. */
+.pz-bd-card {
+  position: absolute;
+  top: 0;
+  width: var(--w);
+  aspect-ratio: 104 / 128;
+}
+/* On a phone vmin is the narrow width, so cards need extra size to read as cards. */
+@media (orientation: portrait) {
+  .pz-bd-card {
+    width: calc(var(--w) * 1.6);
+  }
+}
+.pz-bd-fall {
+  width: 100%;
+  height: 100%;
+  translate: 0 -110%;
+  animation:
+    pz-bd-fall var(--fall) linear var(--fall-delay) infinite,
+    pz-bd-sway calc(var(--spin) * 0.7) ease-in-out var(--spin-delay) infinite alternate;
+  will-change: translate, transform;
+}
+/* Percentages are the card's own height, so every size starts and ends fully off screen. */
+@keyframes pz-bd-fall {
+  from {
+    translate: 0 -110%;
+  }
+  to {
+    translate: 0 calc(100vh + 10%);
+  }
+}
+@keyframes pz-bd-sway {
+  from {
+    transform: translateX(-2.5vmin);
+  }
+  to {
+    transform: translateX(2.5vmin);
+  }
+}
+.pz-bd-spin {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  animation: pz-bd-spin var(--spin) linear var(--spin-delay) infinite;
+  will-change: transform;
+}
+@keyframes pz-bd-spin {
+  from {
+    transform: perspective(700px) rotate3d(var(--axis), 0deg);
+  }
+  to {
+    transform: perspective(700px) rotate3d(var(--axis), 360deg);
+  }
+}
+.pz-bd-face {
+  position: absolute;
+  inset: 0;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  /* Solid objects in a dim room: depth reads as darkness and focus, not transparency. */
+  filter: blur(var(--blur)) brightness(var(--lit)) var(--shadow, drop-shadow(0 18px 24px rgba(0, 0, 0, 0.6)));
+}
+.pz-bd-face.back {
+  transform: rotateY(180deg);
+}
+
+/* Film grain so the dark gradients don't band and the surface reads as a material. */
+.pz-bd-grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.08;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 160px 160px;
+}
+
+/* Screens people work in (deck builder, opponent pick) keep the room but drop the show. */
+.pz-backdrop.quiet .pz-bd-cards {
+  opacity: 0.35;
+}
+.pz-backdrop.quiet .pz-bd-table {
+  opacity: 0.6;
+}
+
+/* Reduced motion: the cards hang still at their resting heights, slightly turned. */
+@media (prefers-reduced-motion: reduce) {
+  .pz-bd-grid,
+  .pz-bd-fall,
+  .pz-bd-spin {
+    animation: none;
+  }
+  .pz-bd-fall {
+    translate: 0 var(--rest);
+  }
+  .pz-bd-spin {
+    transform: perspective(700px) rotate3d(var(--axis), 28deg);
+  }
+}

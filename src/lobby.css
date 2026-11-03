@@ -63,6 +63,47 @@
   margin-bottom: 0;
 }
 
+/* A light glint crosses the logo now and then, clipped to the lettering itself. */
+.pz-logo-wrap {
+  position: relative;
+  display: flex;
+  max-height: 100%;
+}
+.pz-logo-glint {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  -webkit-mask: var(--logo) center / contain no-repeat;
+  mask: var(--logo) center / contain no-repeat;
+}
+.pz-logo-glint::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -50%;
+  width: 50%;
+  background: linear-gradient(100deg, transparent 20%, rgba(255, 244, 196, 0.8) 50%, transparent 80%);
+  transform: translateX(-100%);
+  animation: pz-logo-glint 9s var(--ease-in-out) 2.5s infinite;
+}
+@keyframes pz-logo-glint {
+  0% {
+    transform: translateX(0);
+  }
+  14%,
+  100% {
+    transform: translateX(400%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pz-logo-glint {
+    display: none;
+  }
+}
+
 .pz-logo-img {
   width: min(360px, 85vw);
   height: auto;
@@ -232,7 +273,8 @@
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding-right: 2px;
+  /* Room for a card tilting and growing under the pointer without the scroller clipping it. */
+  padding: 5px 4px;
   scrollbar-width: thin;
   scrollbar-color: rgba(109, 243, 207, 0.45) rgba(0, 0, 0, 0.2);
 }
@@ -292,6 +334,21 @@
 .pz-builder-card.selected {
   outline: 1px solid var(--accent-bright);
   outline-offset: 1px;
+}
+.pz-builder-card:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+/* An added card in flight to its deck slot; the slot's real card waits hidden until it lands. */
+.pz-builder-ghost {
+  position: fixed;
+  z-index: 100;
+  margin: 0;
+  pointer-events: none;
+  filter: drop-shadow(0 10px 14px rgba(0, 0, 0, 0.55));
+}
+.pz-builder-card.arriving {
+  visibility: hidden;
 }
 
 .pz-builder-empty-slot {
@@ -781,12 +838,6 @@
   line-height: 1.25;
 }
 
-.pz-waiting-status-dot {
-  width: 6px;
-  height: 6px;
-  flex: 0 0 6px;
-}
-
 .pz-waiting-modal-card .pz-invite-qr-panel {
   gap: 6px;
   padding: 4px 0 0;
@@ -928,22 +979,6 @@
   color: #1ab28c;
   font-weight: 600;
 }
-.pz-pulse-dot {
-  width: 8px;
-  height: 8px;
-  background-color: #1ab28c;
-  border-radius: 50%;
-  display: inline-block;
-  box-shadow: 0 0 8px #1ab28c;
-  animation: pulse 1.8s infinite ease-in-out;
-}
-
-@keyframes pulse {
-  0% { transform: scale(0.9); opacity: 0.6; box-shadow: 0 0 0 0 rgba(26, 178, 140, 0.7); }
-  50% { transform: scale(1.1); opacity: 1; box-shadow: 0 0 0 8px rgba(26, 178, 140, 0); }
-  100% { transform: scale(0.9); opacity: 0.6; box-shadow: 0 0 0 0 rgba(26, 178, 140, 0); }
-}
-
 .pz-waiting-fields {
   display: flex;
   flex-direction: column;
@@ -1465,6 +1500,37 @@
   box-shadow: 0 0 8px rgba(232, 200, 74, 0.6), inset 0 0 3px rgba(255, 255, 255, 0.25);
 }
 
+/* Pointer tilt (ui/pointerTilt.ts): follows the mouse closely, eases back flat on leave. */
+.pz-tilt {
+  transition:
+    transform 0.4s var(--ease-out),
+    border-color 0.2s,
+    box-shadow 0.2s,
+    opacity 0.2s;
+}
+.pz-tilt.tilting {
+  transition:
+    transform 0.12s ease-out,
+    border-color 0.2s,
+    box-shadow 0.2s,
+    opacity 0.2s;
+}
+/* Light catching the surface where the pointer is. */
+.pz-tilt::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(circle at var(--gx, 50%) var(--gy, 0%), rgba(255, 244, 196, 0.32), transparent 60%);
+  mix-blend-mode: screen;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+}
+.pz-tilt.tilting::after {
+  opacity: 1;
+}
+
 .pz-opponent-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(56px, 68px));
@@ -1485,7 +1551,19 @@
   color: inherit;
 }
 
+.pz-opponent-tile {
+  animation: pz-tile-in 0.34s var(--ease-out) calc(var(--ti, 0) * 30ms) backwards;
+  transition: opacity 0.25s ease, filter 0.25s ease;
+}
+@keyframes pz-tile-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.94);
+  }
+}
+
 .pz-opponent-tile-art {
+  position: relative;
   aspect-ratio: 1 / 1;
   border-radius: 8px;
   overflow: hidden;
@@ -1494,7 +1572,39 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+}
+
+/* The pick: the chosen portrait steps forward in gold while the rest fall back. */
+.pz-opponent-grid.has-pick .pz-opponent-tile {
+  pointer-events: none;
+}
+.pz-opponent-tile.passed {
+  opacity: 0.3;
+  filter: grayscale(0.7);
+}
+.pz-opponent-tile.picked {
+  position: relative;
+  z-index: 1;
+}
+.pz-opponent-tile.picked .pz-opponent-tile-art {
+  border-color: var(--gold-bright);
+  animation: pz-tile-pick 0.42s cubic-bezier(0.2, 1.3, 0.4, 1) forwards;
+}
+.pz-opponent-tile.picked .pz-opponent-tile-name {
+  color: var(--gold-bright);
+}
+@keyframes pz-tile-pick {
+  to {
+    transform: translateY(-6%) scale(1.18);
+    box-shadow:
+      0 10px 22px rgba(0, 0, 0, 0.55),
+      0 0 26px rgba(232, 200, 74, 0.6);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pz-opponent-tile {
+    animation: none;
+  }
 }
 
 .pz-opponent-tile-art img {
@@ -1511,11 +1621,9 @@
 .pz-opponent-tile:focus-visible .pz-opponent-tile-art {
   border-color: var(--gold);
   box-shadow: 0 0 16px rgba(232, 200, 74, 0.4);
-  transform: scale(1.03);
 }
-
-.pz-opponent-tile:active .pz-opponent-tile-art {
-  transform: scale(0.98);
+.pz-opponent-tile:focus-visible .pz-opponent-tile-art {
+  transform: scale(1.05);
 }
 
 .pz-opponent-tile-name {

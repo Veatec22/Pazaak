@@ -33,22 +33,36 @@
     display: none;
   }
 
+  /* The rail is narrow: long names wrap between words and shrink to fit (nameFit.ts). */
   .pz-board-rail .pz-pname {
     order: 1;
-    font-size: clamp(0.4rem, 1.8vw, 0.66rem);
+    font-size: clamp(0.5rem, 2.4vw, 0.74rem);
     width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    container-type: inline-size;
     letter-spacing: 0.03em;
     line-height: 1.05;
-    white-space: nowrap;
     text-align: center;
+  }
+  .pz-board-rail .pz-pname-text {
+    width: 100%;
+    font-size: min(1em, 100cqi / (var(--chars, 6) * (var(--name-em, 0.97) + 0.03)));
+    font-stretch: var(--name-stretch, 100%);
+    overflow-wrap: normal;
+  }
+  /* Plenty of room above the name in the rail: the portrait fills most of its width. */
+  .pz-board-rail .pz-companion-avatar {
+    width: min(100%, calc(var(--pz-total-size) * 2));
+    height: auto;
+    aspect-ratio: 1;
+  }
+  .pz-board-rail {
+    --pz-total-size: clamp(1rem, 4.4vw, 1.9rem);
   }
   .pz-board-rail .pz-total {
     order: 2;
     margin-left: 0;
     min-width: 0;
-    font-size: clamp(1rem, 4.4vw, 1.9rem);
+    font-size: var(--pz-total-size);
     line-height: 1;
   }
   .pz-board-rail .pz-pips {

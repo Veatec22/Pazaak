@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
 
 
+import { MenuBackdrop } from './components/menu/MenuBackdrop';
 import { CampaignGame } from './components/singleplayer/CampaignGame';
 import { CampaignScreen } from './components/singleplayer/CampaignScreen';
 import { OpponentSelectScreen } from './components/singleplayer/OpponentSelectScreen';
@@ -14,6 +16,8 @@ import {
   backIntentForRoute,
   forfeitTargetForRoute,
   hostKey,
+  isGameRoute,
+  parentRouteForRoute,
   parseCurrentRoute,
   routeToUrl,
   type Route,
@@ -21,6 +25,44 @@ import {
 import { Board } from './ui/Board';
 import { installClickSound } from './ui/uiSounds';
 import { useMatch } from './ui/useMatch';
+
+// Menu routes share one backdrop, so it keeps drifting across navigation instead of restarting.
+const MENU_ROUTES: ReadonlySet<Route['mode']> = new Set([
+  'main-menu',
+  'single-menu',
+  'multi-menu',
+  'quick-setup',
+  'quick-opponent',
+  'campaign',
+  'deck-builder',
+]);
+const QUIET_MENU_ROUTES: ReadonlySet<Route['mode']> = new Set(['quick-opponent', 'deck-builder']);
+
+/** How many levels below the main menu a route sits; going up a level plays the transition backwards. */
+function routeDepth(route: Route): number {
+  let depth = 0;
+  for (let up = parentRouteForRoute(route); up; up = parentRouteForRoute(up)) depth++;
+  return depth;
+}
+
+/**
+ * Swap screens inside a view transition: menus slide a step sideways (back the other
+ * way), and sitting down at or getting up from a table zooms. Without the API the screen
+ * just switches.
+ */
+function transitionRoute(from: Route, to: Route, apply: () => void) {
+  if (typeof document === 'undefined' || !document.startViewTransition || from.mode === to.mode) {
+    apply();
+    return;
+  }
+  const root = document.documentElement;
+  root.dataset.routeTransition =
+    isGameRoute(from) || isGameRoute(to) ? 'table' : routeDepth(to) < routeDepth(from) ? 'back' : 'forward';
+  const transition = document.startViewTransition(() => flushSync(apply));
+  void transition.finished.finally(() => {
+    delete root.dataset.routeTransition;
+  });
+}
 
 const newRoomId = () => Math.random().toString(36).slice(2, 8) + Math.random().toString(36).slice(2, 6);
 
@@ -32,8 +74,9 @@ export default function App() {
   const [route, setRoute] = useState<Route>(initialRoute.current);
 
   const setCurrentRoute = useCallback((next: Route) => {
+    const from = routeRef.current;
     routeRef.current = next;
-    setRoute(next);
+    transitionRoute(from, next, () => setRoute(next));
   }, []);
 
   const writeRoute = useCallback((next: Route, replace = false) => {
@@ -180,6 +223,7 @@ export default function App() {
   return (
     <MusicProvider>
       <div className="pz-app">
+        {MENU_ROUTES.has(route.mode) ? <MenuBackdrop quiet={QUIET_MENU_ROUTES.has(route.mode)} /> : null}
         {content}
       </div>
     </MusicProvider>
