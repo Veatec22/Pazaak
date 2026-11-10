@@ -1,5 +1,7 @@
 import { type CSSProperties } from 'react';
 
+import { bakedStyle, useBakedSprites, useViewportUnit, type BakeSpec } from '../../ui/bakedCards';
+
 import './menuBackdrop.css';
 
 const CARDS = `${import.meta.env.BASE_URL}pazaak/cards`;
@@ -61,20 +63,48 @@ const cardStyle = (c: FallingCard): CSSProperties =>
     ...(c.depth > 1 ? { '--shadow': 'drop-shadow(0 0 0 transparent)' } : {}),
   }) as CSSProperties;
 
+// Mirrors the filter on .pz-bd-face, so the baked sprites match the CSS fallback.
+const CARD_SHADOW = { dy: 18, blur: 24, opacity: 0.6 };
+// Portrait cards are drawn larger; mirrors the media query on .pz-bd-card.
+const PORTRAIT_SCALE = 1.6;
+
 export function MenuBackdrop({ quiet = false }: { quiet?: boolean }) {
+  const { vmin, portrait } = useViewportUnit();
+  // Two sprites per card, front then back, each with that card's blur and dimming baked in.
+  const sprites = useBakedSprites(`${vmin}:${portrait}`, () =>
+    FALLING_CARDS.flatMap((c): BakeSpec[] => {
+      const look = {
+        width: c.w * vmin * (portrait ? PORTRAIT_SCALE : 1),
+        blur: c.blur,
+        lit: c.lit,
+        shadow: c.depth > 1 ? undefined : CARD_SHADOW,
+      };
+      return [
+        { art: c.art, ...look },
+        { art: 'pcards_back_p', ...look },
+      ];
+    }),
+  );
+  const face = (i: number, side: 0 | 1, art: string) =>
+    sprites ? (
+      <div className={`pz-bd-face baked ${side ? 'back' : ''}`} style={bakedStyle(sprites[i * 2 + side])} />
+    ) : (
+      <div className={`pz-bd-face ${side ? 'back' : ''}`} style={{ backgroundImage: `url(${CARDS}/${art}.png)` }} />
+    );
+
   return (
     <div className={`pz-backdrop ${quiet ? 'quiet' : ''}`} aria-hidden>
-      <div className="pz-bd-light" />
       <div className="pz-bd-table">
         <div className="pz-bd-grid" />
       </div>
+      <div className="pz-bd-light" />
       <div className="pz-bd-cards">
         {FALLING_CARDS.map((card, i) => (
           <div key={i} className="pz-bd-card" style={cardStyle(card)}>
             <div className="pz-bd-fall">
               <div className="pz-bd-spin">
-                <div className="pz-bd-face" style={{ backgroundImage: `url(${CARDS}/${card.art}.png)` }} />
-                <div className="pz-bd-face back" style={{ backgroundImage: `url(${CARDS}/pcards_back_p.png)` }} />
+                {face(i, 0, card.art)}
+                {face(i, 1, 'pcards_back_p')}
               </div>
             </div>
           </div>

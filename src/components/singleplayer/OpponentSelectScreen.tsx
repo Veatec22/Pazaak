@@ -1,4 +1,4 @@
-import { Shuffle } from 'lucide-react';
+import { ArrowLeft, Shuffle } from 'lucide-react';
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 
 import { COMPANION_LIST, COMPANIONS, randomCompanionId } from '../../companions/companions';
@@ -6,6 +6,7 @@ import type { CardPool } from '../../engine';
 import { useI18n } from '../../net/useI18n';
 import { primeCompanionVoice } from '../../ui/companionVoice';
 import { tiltHandlers } from '../../ui/pointerTilt';
+import { MenuButton } from '../menu/MenuButton';
 import { MenuScreen } from '../menu/MenuScreen';
 
 // How long the chosen portrait holds the spotlight before the match starts.
@@ -104,9 +105,9 @@ export function OpponentSelectScreen({
         </div>
       </div>
 
-      <button className="pz-btn" onClick={onLeave}>
-        {t('btn_back')}
-      </button>
+      <div className="pz-lobby-actions">
+        <MenuButton icon={ArrowLeft} title={t('btn_back')} onClick={onLeave} />
+      </div>
     </MenuScreen>
   );
 }

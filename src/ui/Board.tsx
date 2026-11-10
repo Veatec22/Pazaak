@@ -12,6 +12,7 @@ import { useI18n } from '../net/useI18n';
 import { inviteUrlForRoom } from '../navigation';
 import { useCopyToClipboard } from './clipboard';
 import { RollingTotal } from './RollingTotal';
+import { preloadCardArt } from './bakedCards';
 import { GoldShower } from './GoldShower';
 import { MatchSummary } from './MatchSummary';
 import { ShuffleDeck } from './ShuffleDeck';
@@ -91,6 +92,9 @@ export function Board({
   const { moments, leaving, decidedBy } = useTableMoments(display);
   const setRecords = useMatchRecord(display);
   const bustIds = moments.map((m) => (m?.kind === 'bust' ? m.id : 0)).join(',');
+
+  // The win shower's art, fetched ahead so its first frame is already baked.
+  useEffect(() => preloadCardArt('pcards_gold_p', 'pcards_back_p'), []);
 
   // Going over 20 jolts the cards on that seat's table, in step with the red flash.
   useEffect(() => {
@@ -277,6 +281,7 @@ export function Board({
 
             return (
               <section key={seat} className={`pz-player ${isYou ? 'you' : ''} ${active ? 'active' : ''} ${display.standing[seat] ? 'standing' : ''}`}>
+                <span className="pz-player-ring" aria-hidden />
                 {moment ? <div key={moment.id} className={`pz-moment ${moment.kind}`} aria-hidden /> : null}
                 {display.standing[seat] ? (
                   <div className="pz-stand-stamp" aria-hidden>{t('standing_label')}</div>
@@ -478,6 +483,7 @@ export function Board({
 
       {banner ? (
         <div className={`pz-banner ${banner.kind} ${banner.tone ?? ''}`}>
+          <span className="pz-banner-sheen" aria-hidden />
           <div>{banner.text}</div>
           {banner.kind === 'match' && setRecords.length ? (
             <MatchSummary
@@ -613,13 +619,23 @@ function TableCard({ card, origin }: { card: DisplayCard; origin?: () => FlightO
       const face = `url(${cardArt(card.label, card.family)})`;
       const at = (t: number, turn: number) =>
         `perspective(600px) translate(${dx * (1 - t)}px, ${dy * (1 - t)}px) scale(${scale + (1 - scale) * t}) rotateY(${turn}deg)`;
+      // The art swap is its own animation: sharing keyframes with the transform would pull
+      // the whole flight off the compositor and onto the main thread.
       flights.push(
         el.animate(
           [
-            { transform: at(0, 180), backgroundImage: back, filter: lifted },
-            { transform: at(0.5, 90), backgroundImage: back, offset: 0.5 },
-            { transform: at(0.5, 90), backgroundImage: face, offset: 0.5 },
-            { transform: at(1, 0), backgroundImage: face, filter: settled },
+            { transform: at(0, 180), filter: lifted },
+            { transform: at(0.5, 90), offset: 0.5 },
+            { transform: at(1, 0), filter: settled },
+          ],
+          timing,
+        ),
+        el.animate(
+          [
+            { backgroundImage: back },
+            { backgroundImage: back, offset: 0.5 },
+            { backgroundImage: face, offset: 0.5 },
+            { backgroundImage: face },
           ],
           timing,
         ),
