@@ -710,12 +710,12 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(2, 10, 8, 0.85);
+  /* Opaque enough to need no backdrop blur, which would re-run on every frame of the scene behind. */
+  background: rgba(2, 10, 8, 0.9);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 100;
-  backdrop-filter: blur(8px);
   padding: 16px;
   animation: fadeIn 0.2s ease-out;
 }
@@ -947,14 +947,13 @@
 }
 .pz-waiting-card {
   width: min(440px, 90vw);
-  background: rgba(5, 18, 14, 0.8);
+  background: rgba(5, 18, 14, 0.94);
   border: 1px solid var(--border);
   border-radius: 16px;
   padding: 28px clamp(16px, 5vw, 32px);
   box-shadow:
     0 20px 40px rgba(0, 0, 0, 0.5),
     0 0 30px rgba(26, 178, 140, 0.1);
-  backdrop-filter: blur(10px);
   text-align: left;
   animation: zoomIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -1032,9 +1031,8 @@
   align-items: center;
   gap: 8px;
   padding: 10px clamp(12px, 3vw, 24px);
-  background: rgba(2, 14, 10, 0.92);
+  background: rgba(2, 14, 10, 0.95);
   border-bottom: 1px solid var(--border);
-  backdrop-filter: blur(6px);
 }
 .pz-share-label {
   font-size: 0.75rem;
@@ -1515,20 +1513,25 @@
     box-shadow 0.2s,
     opacity 0.2s;
 }
-/* Light catching the surface where the pointer is. */
-.pz-tilt::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: radial-gradient(circle at var(--gx, 50%) var(--gy, 0%), rgba(255, 244, 196, 0.32), transparent 60%);
-  mix-blend-mode: screen;
-  opacity: 0;
-  transition: opacity 0.25s ease;
-  pointer-events: none;
-}
-.pz-tilt.tilting::after {
-  opacity: 1;
+/*
+ * Light catching the surface where the pointer is. Mouse only, like the tilt itself: on
+ * touch the glare never shows, and its blend mode would still cost a surface per tile.
+ */
+@media (hover: hover) and (pointer: fine) {
+  .pz-tilt::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(circle at var(--gx, 50%) var(--gy, 0%), rgba(255, 244, 196, 0.32), transparent 60%);
+    mix-blend-mode: screen;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    pointer-events: none;
+  }
+  .pz-tilt.tilting::after {
+    opacity: 1;
+  }
 }
 
 .pz-opponent-grid {
@@ -1651,7 +1654,7 @@
   flex: 0 0 auto;
 }
 
-.pz-opponent-select .pz-lobby-content > .pz-btn {
+.pz-opponent-select .pz-lobby-content > .pz-lobby-actions {
   flex: 0 0 auto;
   margin-top: 4px;
 }
@@ -1688,7 +1691,6 @@
     gap: 6px;
     border-right: 0;
     background: transparent;
-    backdrop-filter: none;
   }
 
   .pz-topbar-icon {

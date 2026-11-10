@@ -30,8 +30,18 @@
   height: 46%;
   perspective: 520px;
   perspective-origin: 50% 0%;
-  -webkit-mask-image: radial-gradient(75% 105% at 50% 100%, #000 35%, transparent 78%);
-  mask-image: radial-gradient(75% 105% at 50% 100%, #000 35%, transparent 78%);
+  /* The grid's near edge projects above the table; nothing shows outside the box. */
+  overflow: hidden;
+}
+/*
+ * The grid fades into the room. A mask would be re-applied on every frame the grid
+ * moves, so the fade is the room's own colour laid over it; the lights sit above both.
+ */
+.pz-bd-table::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(75% 105% at 50% 100%, transparent 35%, var(--bg) 78%);
 }
 .pz-bd-table::before {
   content: '';
@@ -70,7 +80,6 @@
 .pz-bd-cards {
   position: absolute;
   inset: 0;
-  transition: opacity 0.6s ease;
 }
 /* Layers per card: lane → fall + sway → 3D tumble → two faces. */
 .pz-bd-card {
@@ -135,28 +144,41 @@
   background-position: center;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
+  transition: opacity 0.6s ease;
   /* Solid objects in a dim room: depth reads as darkness and focus, not transparency. */
   filter: blur(var(--blur)) brightness(var(--lit)) var(--shadow, drop-shadow(0 18px 24px rgba(0, 0, 0, 0.6)));
+}
+/* Baked: the same blur, dimming and shadow already painted into the image (bakedCards.ts). */
+.pz-bd-face.baked {
+  inset: calc(var(--pad, 0px) * -1);
+  background-size: 100% 100%;
+  filter: none;
 }
 .pz-bd-face.back {
   transform: rotateY(180deg);
 }
 
-/* Film grain so the dark gradients don't band and the surface reads as a material. */
+/*
+ * Film grain so the dark gradients don't band and the surface reads as a material.
+ * Plain alpha, not a blend mode: blending would recomposite the whole screen every frame.
+ */
 .pz-bd-grain {
   position: absolute;
   inset: 0;
-  opacity: 0.08;
-  mix-blend-mode: overlay;
+  opacity: 0.035;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   background-size: 160px 160px;
 }
 
-/* Screens people work in (deck builder, opponent pick) keep the room but drop the show. */
-.pz-backdrop.quiet .pz-bd-cards {
+/*
+ * Screens people work in (deck builder, opponent pick) keep the room but drop the show.
+ * The fade is set on the leaf layers: on their containers it would flatten every moving
+ * card into one screen-sized surface, redrawn each frame.
+ */
+.pz-backdrop.quiet .pz-bd-face {
   opacity: 0.35;
 }
-.pz-backdrop.quiet .pz-bd-table {
+.pz-backdrop.quiet .pz-bd-grid {
   opacity: 0.6;
 }
 

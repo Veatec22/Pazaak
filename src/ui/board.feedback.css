@@ -39,11 +39,35 @@
     rgba(14, 11, 2, 0.96);
   text-shadow: 0 0 22px rgba(232, 200, 74, 0.55);
   box-shadow: 0 0 60px rgba(232, 200, 74, 0.4), inset 0 0 26px rgba(232, 200, 74, 0.12);
-  animation: pz-pop 0.25s ease-out, pz-win-glow 2.2s ease-in-out 0.25s infinite;
-  overflow: hidden;
+  animation: pz-pop 0.25s ease-out;
+}
+/* The brighter glow is its own layer, so the pulse is an opacity change, not a repaint. */
+.pz-banner.match.win::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  box-shadow: 0 0 88px rgba(232, 200, 74, 0.38), inset 0 0 32px rgba(232, 200, 74, 0.1);
+  opacity: 0;
+  pointer-events: none;
+  z-index: -1;
+  animation: pz-win-glow 2.2s ease-in-out 0.25s infinite;
 }
 
-.pz-banner.match.win::before {
+/* The sweep of light is clipped by its own box, leaving the banner free to glow outward. */
+.pz-banner-sheen {
+  display: none;
+}
+.pz-banner.match.win > .pz-banner-sheen {
+  display: block;
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: -1;
+}
+.pz-banner.match.win > .pz-banner-sheen::before {
   content: '';
   position: absolute;
   inset: -40%;
@@ -55,15 +79,13 @@
     transparent 360deg
   );
   animation: pz-win-spin 6s linear infinite;
-  pointer-events: none;
-  z-index: -1;
 }
-.pz-banner.match.win > * {
+.pz-banner.match.win > :not(.pz-banner-sheen) {
   position: relative;
 }
 @keyframes pz-win-glow {
   50% {
-    box-shadow: 0 0 88px rgba(232, 200, 74, 0.6), inset 0 0 32px rgba(232, 200, 74, 0.2);
+    opacity: 1;
   }
 }
 @keyframes pz-win-spin {
@@ -119,13 +141,12 @@
   gap: 14px;
   text-align: center;
   padding: 24px;
-  background: rgba(2, 12, 9, 0.86);
-  backdrop-filter: blur(4px);
+  background: rgba(2, 12, 9, 0.9);
   color: var(--text-bright);
   font-size: 1.05rem;
 }
 .pz-overlay.light {
-  background: rgba(2, 12, 9, 0.66);
+  background: rgba(2, 12, 9, 0.72);
 }
 .pz-overlay small {
   color: var(--text);
@@ -162,7 +183,8 @@
     animation: pz-fade-in 0.25s ease-out;
   }
   .pz-player.active::after,
-  .pz-banner.match.win::before {
+  .pz-banner.match.win::after,
+  .pz-banner.match.win > .pz-banner-sheen::before {
     animation: none;
   }
   .pz-hand-flip-shell.playable:hover,
@@ -357,6 +379,12 @@
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   filter: blur(var(--blur)) drop-shadow(0 8px 12px rgba(0, 0, 0, 0.5));
+}
+/* Baked: the same blur and shadow already painted into the image (bakedCards.ts). */
+.pz-shower-face.baked {
+  inset: calc(var(--pad, 0px) * -1);
+  background-size: 100% 100%;
+  filter: none;
 }
 .pz-shower-face.back {
   transform: rotateY(180deg);

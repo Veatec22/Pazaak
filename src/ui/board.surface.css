@@ -10,12 +10,28 @@
     radial-gradient(1200px 600px at 50% -10%, rgba(26, 178, 140, 0.12), transparent 60%),
     var(--bg);
 }
+/*
+ * The tabletop is its own layer under the panel's contents. Cards, totals and slots
+ * repaint all through a set; painted into the same layer, each of those repaints would
+ * redraw the grain (two turbulence filters) along with them.
+ */
 .pz-player {
+  background: none;
+  isolation: isolate;
+}
+.pz-player::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  border-radius: inherit;
   background:
     radial-gradient(ellipse 70% 55% at 50% 42%, rgba(26, 178, 140, 0.07), transparent 70%),
     radial-gradient(ellipse 110% 100% at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.38) 100%),
     var(--pz-grain),
     var(--panel);
+  pointer-events: none;
+  will-change: transform;
 }
 
 .pz-grid {
@@ -24,9 +40,22 @@
 .pz-player.standing .pz-grid {
   opacity: 0.82;
 }
-.pz-player.active {
-  border-color: var(--accent);
+/*
+ * Whose turn it is: a lit rim. It fades as a layer of its own; a box-shadow transition
+ * on the panel would repaint the whole seat, cards and all, on every frame of the fade.
+ */
+.pz-player-ring {
+  position: absolute;
+  inset: -1px;
+  border: 1px solid var(--accent);
+  border-radius: inherit;
   box-shadow: 0 0 0 1px var(--accent), 0 0 22px rgba(26, 178, 140, 0.22);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s;
+}
+.pz-player.active > .pz-player-ring {
+  opacity: 1;
 }
 /* The wider glow lives on its own layer so the pulse is an opacity change, not a repaint. */
 .pz-player::after {
@@ -277,15 +306,26 @@
   box-shadow:
     inset 0 2px 6px rgba(0, 0, 0, 0.5),
     inset 0 0 0 1px rgba(109, 243, 207, 0.05);
-  transition: box-shadow 0.25s ease;
 }
-/* The slot the next card lands in, on the seat whose turn it is. */
-.pz-player.active .pz-grid > .pz-slot:first-child,
-.pz-player.active .pz-card + .pz-slot {
+/* The slot the next card lands in, on the seat whose turn it is: a highlight faded in by opacity. */
+.pz-slot {
+  position: relative;
+}
+.pz-slot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
   box-shadow:
-    inset 0 2px 6px rgba(0, 0, 0, 0.5),
-    inset 0 0 0 1px rgba(109, 243, 207, 0.28),
+    inset 0 0 0 1px rgba(109, 243, 207, 0.24),
     inset 0 0 14px rgba(26, 178, 140, 0.14);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+.pz-player.active .pz-grid > .pz-slot:first-child::after,
+.pz-player.active .pz-card + .pz-slot::after {
+  opacity: 1;
 }
 
 .pz-card,
